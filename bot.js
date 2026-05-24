@@ -112,7 +112,6 @@ async function registerCommands() {
 // 🎨 EMBED HELPERS
 // ================================
 const BLUE = 0x0066FF;
-const LOGO = "https://i.imgur.com/placeholder.png"; // Remplace avec ton logo URL
 
 function makeEmbed(title, description, fields = []) {
     const embed = new EmbedBuilder()
@@ -121,9 +120,15 @@ function makeEmbed(title, description, fields = []) {
         .setDescription(description)
         .setTimestamp()
         .setFooter({ text: "LKWAN STORE 🎮" });
-
     if (fields.length > 0) embed.addFields(fields);
     return embed;
+}
+
+function base64ToAttachment(base64str, filename = "image.png") {
+    const matches = base64str.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+    if (!matches) return null;
+    const buffer = Buffer.from(matches[2], "base64");
+    return new AttachmentBuilder(buffer, { name: filename });
 }
 
 // ================================
@@ -151,16 +156,47 @@ client.on("guildMemberAdd", async (member) => {
     const channel = member.guild.channels.cache.get(data.welcome.channelId || process.env.WELCOME_CHANNEL_ID);
     if (!channel) return;
 
-    const embed = makeEmbed(
-        `👋 Bienvenue sur LKWAN STORE !`,
-        data.welcome.message.replace("{user}", `<@${member.id}>`),
-        [
-            { name: "🛒 Nos produits", value: "Tape `/stock` pour voir nos produits", inline: true },
-            { name: "💰 Nos prix", value: "Tape `/prix` pour voir les tarifs", inline: true },
-        ]
-    );
+    const w = data.welcome;
+    const userMention = `<@${member.id}>`;
 
-    channel.send({ embeds: [embed] });
+    try {
+        if (w.type === 'embed') {
+            const colorInt = parseInt((w.embedColor || '#0066ff').replace('#', ''), 16);
+            const embed = new EmbedBuilder().setColor(colorInt || 0x0066FF);
+            if (w.embedTitle) embed.setTitle(w.embedTitle);
+            if (w.embedDesc) embed.setDescription(w.embedDesc.replace('{user}', userMention));
+            if (w.embedFooter) embed.setFooter({ text: w.embedFooter });
+
+            const payload = { content: userMention, embeds: [embed] };
+
+            if (w.embedImageUrl) {
+                if (w.embedImageUrl.startsWith('data:')) {
+                    const att = base64ToAttachment(w.embedImageUrl, 'welcome.png');
+                    if (att) { payload.files = [att]; embed.setImage('attachment://welcome.png'); }
+                } else {
+                    embed.setImage(w.embedImageUrl);
+                }
+            }
+
+            await channel.send(payload);
+        } else {
+            const msg = (w.message || 'Bienvenue {user} !').replace('{user}', userMention);
+            const payload = { content: msg };
+
+            if (w.imageUrl) {
+                if (w.imageUrl.startsWith('data:')) {
+                    const att = base64ToAttachment(w.imageUrl, 'welcome.png');
+                    if (att) payload.files = [att];
+                } else {
+                    payload.files = [w.imageUrl];
+                }
+            }
+
+            await channel.send(payload);
+        }
+    } catch (err) {
+        console.error("Welcome error:", err);
+    }
 });
 
 // ================================
@@ -364,13 +400,7 @@ app.post("/api/welcome", auth, (req, res) => {
     res.json({ success: true });
 });
 
-// Helper: convert base64 to AttachmentBuilder
-function base64ToAttachment(base64str, filename = "image.png") {
-    const matches = base64str.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
-    if (!matches) return null;
-    const buffer = Buffer.from(matches[2], "base64");
-    return new AttachmentBuilder(buffer, { name: filename });
-}
+// POST say
 app.post("/api/say", auth, async (req, res) => {
     const { channelId, message, imageUrl, type, embed, mentionStr } = req.body;
     try {
