@@ -335,13 +335,44 @@ app.post("/api/welcome", auth, (req, res) => {
 
 // POST say — poster un message dans un salon via dashboard
 app.post("/api/say", auth, async (req, res) => {
-    const { channelId, message, imageUrl } = req.body;
+    const { channelId, message, imageUrl, type, embed, mentionStr } = req.body;
     try {
         const channel = await client.channels.fetch(channelId);
-        const payload = { content: message };
-        if (imageUrl) payload.files = [imageUrl];
-        await channel.send(payload);
+        const mention = mentionStr ? mentionStr + '\n' : '';
+
+        if (type === 'embed' && embed) {
+            // Convert hex color to int
+            const colorInt = parseInt(embed.color.replace('#', ''), 16);
+            const discordEmbed = new EmbedBuilder()
+                .setColor(colorInt || 0x0066FF);
+            if (embed.title) discordEmbed.setTitle(embed.title);
+            if (embed.description) discordEmbed.setDescription(embed.description);
+            if (embed.footer) discordEmbed.setFooter({ text: embed.footer });
+            if (embed.imageUrl) discordEmbed.setImage(embed.imageUrl);
+
+            const payload = { content: mention || null, embeds: [discordEmbed] };
+            await channel.send(payload);
+        } else {
+            const payload = { content: mention + (message || '') };
+            if (imageUrl) payload.files = [imageUrl];
+            await channel.send(payload);
+        }
         res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET roles list
+app.get("/api/roles", auth, async (req, res) => {
+    try {
+        const guild = await client.guilds.fetch(process.env.GUILD_ID);
+        await guild.roles.fetch();
+        const roles = guild.roles.cache
+            .filter(r => r.name !== '@everyone')
+            .sort((a, b) => b.position - a.position)
+            .map(r => ({ id: r.id, name: r.name, color: r.hexColor !== '#000000' ? r.hexColor : null }));
+        res.json(roles);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
