@@ -179,19 +179,28 @@ client.on("interactionCreate", async (interaction) => {
 
         if (products.length === 0) {
             return interaction.reply({
-                embeds: [makeEmbed("📦 Stock", "❌ Aucun produit en stock pour le moment.")],
-                ephemeral: false
+                embeds: [new EmbedBuilder()
+                    .setColor(0x0066FF)
+                    .setTitle("📦 Stock")
+                    .setDescription("❌ Aucun produit en stock pour le moment.")
+                    .setFooter({ text: "LKWAN STORE 🎮" })
+                    .setTimestamp()
+                ]
             });
         }
 
-        const fields = products.map(p => ({
-            name: `${p.emoji || "🎮"} ${p.name}`,
-            value: `Stock: **${p.stock}** unités\nPrix: **${p.price}€**`,
-            inline: true
-        }));
+        const lines = products.map(p =>
+            `${p.emoji || "🎮"} **${p.name}** — \`${p.stock} dispo\``
+        ).join("\n");
 
         return interaction.reply({
-            embeds: [makeEmbed("📦 Stock disponible", "Voici nos produits disponibles :", fields)]
+            embeds: [new EmbedBuilder()
+                .setColor(0x0066FF)
+                .setTitle("📦 Stock disponible")
+                .setDescription(lines)
+                .setFooter({ text: "LKWAN STORE 🎮" })
+                .setTimestamp()
+            ]
         });
     }
 
@@ -201,18 +210,28 @@ client.on("interactionCreate", async (interaction) => {
 
         if (products.length === 0) {
             return interaction.reply({
-                embeds: [makeEmbed("💰 Prix", "❌ Aucun produit configuré pour le moment.")]
+                embeds: [new EmbedBuilder()
+                    .setColor(0x0066FF)
+                    .setTitle("💰 Prix")
+                    .setDescription("❌ Aucun produit configuré pour le moment.")
+                    .setFooter({ text: "LKWAN STORE 🎮" })
+                    .setTimestamp()
+                ]
             });
         }
 
-        const fields = products.map(p => ({
-            name: `${p.emoji || "🎮"} ${p.name}`,
-            value: `**${p.price}€**${p.description ? `\n${p.description}` : ""}`,
-            inline: true
-        }));
+        const lines = products.map(p =>
+            `${p.emoji || "🎮"} **${p.name}** — **${p.price}€**${p.description ? `\n> ${p.description}` : ""}`
+        ).join("\n\n");
 
         return interaction.reply({
-            embeds: [makeEmbed("💰 Liste des prix", "Tous nos tarifs :", fields)]
+            embeds: [new EmbedBuilder()
+                .setColor(0x0066FF)
+                .setTitle("💰 Nos tarifs")
+                .setDescription(lines)
+                .setFooter({ text: "LKWAN STORE 🎮" })
+                .setTimestamp()
+            ]
         });
     }
 
@@ -222,18 +241,28 @@ client.on("interactionCreate", async (interaction) => {
 
         if (promos.length === 0) {
             return interaction.reply({
-                embeds: [makeEmbed("🎁 Promotions", "❌ Aucune promotion en cours pour le moment.")]
+                embeds: [new EmbedBuilder()
+                    .setColor(0x0066FF)
+                    .setTitle("🎁 Promotions")
+                    .setDescription("❌ Aucune promotion en cours pour le moment.")
+                    .setFooter({ text: "LKWAN STORE 🎮" })
+                    .setTimestamp()
+                ]
             });
         }
 
-        const fields = promos.map(p => ({
-            name: `🎁 ${p.title}`,
-            value: p.description,
-            inline: false
-        }));
+        const lines = promos.map(p =>
+            `🎁 **${p.title}**\n> ${p.description}`
+        ).join("\n\n");
 
         return interaction.reply({
-            embeds: [makeEmbed("🎁 Promotions en cours", "Profite de nos offres !", fields)]
+            embeds: [new EmbedBuilder()
+                .setColor(0xFF6600)
+                .setTitle("🔥 Promotions en cours")
+                .setDescription(lines)
+                .setFooter({ text: "LKWAN STORE 🎮 • Offres limitées !" })
+                .setTimestamp()
+            ]
         });
     }
 
