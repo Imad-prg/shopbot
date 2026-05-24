@@ -293,7 +293,8 @@ client.on("interactionCreate", async (interaction) => {
 // 🌐 EXPRESS API (pour le dashboard)
 // ================================
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(require("cors")({ origin: '*', methods: ['GET','POST','OPTIONS'], allowedHeaders: ['Content-Type','x-api-key'] }));
 app.options('*', require("cors")());
 
@@ -341,9 +342,6 @@ function base64ToAttachment(base64str, filename = "image.png") {
     const buffer = Buffer.from(matches[2], "base64");
     return new AttachmentBuilder(buffer, { name: filename });
 }
-
-// POST say — poster un message dans un salon via dashboard
-app.use(express.json({ limit: "20mb" }));
 app.post("/api/say", auth, async (req, res) => {
     const { channelId, message, imageUrl, type, embed, mentionStr } = req.body;
     try {
