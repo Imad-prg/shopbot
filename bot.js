@@ -294,7 +294,7 @@ client.on("interactionCreate", async (interaction) => {
 // ================================
 const app = express();
 app.use(express.json());
-app.use(require("cors")({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(require("cors")());
 
 const API_KEY = process.env.API_KEY || "lkwan-secret-key";
 
@@ -333,7 +333,16 @@ app.post("/api/welcome", auth, (req, res) => {
     res.json({ success: true });
 });
 
+// Helper: convert base64 to AttachmentBuilder
+function base64ToAttachment(base64str, filename = "image.png") {
+    const matches = base64str.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+    if (!matches) return null;
+    const buffer = Buffer.from(matches[2], "base64");
+    return new AttachmentBuilder(buffer, { name: filename });
+}
+
 // POST say — poster un message dans un salon via dashboard
+app.use(express.json({ limit: "20mb" }));
 app.post("/api/say", auth, async (req, res) => {
     const { channelId, message, imageUrl, type, embed, mentionStr } = req.body;
     try {
@@ -341,24 +350,46 @@ app.post("/api/say", auth, async (req, res) => {
         const mention = mentionStr ? mentionStr + '\n' : '';
 
         if (type === 'embed' && embed) {
-            // Convert hex color to int
-            const colorInt = parseInt(embed.color.replace('#', ''), 16);
-            const discordEmbed = new EmbedBuilder()
-                .setColor(colorInt || 0x0066FF);
+            const colorInt = parseInt((embed.color || '#0066ff').replace('#', ''), 16);
+            const discordEmbed = new EmbedBuilder().setColor(colorInt || 0x0066FF);
             if (embed.title) discordEmbed.setTitle(embed.title);
             if (embed.description) discordEmbed.setDescription(embed.description);
             if (embed.footer) discordEmbed.setFooter({ text: embed.footer });
-            if (embed.imageUrl) discordEmbed.setImage(embed.imageUrl);
 
             const payload = { content: mention || null, embeds: [discordEmbed] };
+
+            // Handle embed image
+            if (embed.imageUrl) {
+                if (embed.imageUrl.startsWith('data:')) {
+                    const attachment = base64ToAttachment(embed.imageUrl, "embed-image.png");
+                    if (attachment) {
+                        payload.files = [attachment];
+                        discordEmbed.setImage('attachment://embed-image.png');
+                    }
+                } else {
+                    discordEmbed.setImage(embed.imageUrl);
+                }
+            }
+
             await channel.send(payload);
         } else {
             const payload = { content: mention + (message || '') };
-            if (imageUrl) payload.files = [imageUrl];
+
+            // Handle normal image
+            if (imageUrl) {
+                if (imageUrl.startsWith('data:')) {
+                    const attachment = base64ToAttachment(imageUrl, "image.png");
+                    if (attachment) payload.files = [attachment];
+                } else {
+                    payload.files = [imageUrl];
+                }
+            }
+
             await channel.send(payload);
         }
         res.json({ success: true });
     } catch (err) {
+        console.error("Say error:", err);
         res.status(500).json({ error: err.message });
     }
 });
