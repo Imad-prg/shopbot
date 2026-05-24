@@ -484,6 +484,9 @@ let embedImageUrl = null;
 let selectedMentions = [];
 let currentMsgType = 'normal';
 let welcomeEnabled = true;
+let welcomeType = 'message';
+let welcomeImageBase64 = null;
+let welcomeEmbedImageBase64 = null;
 
 // AUTH
 function doLogin() {
@@ -813,11 +816,6 @@ async function sendSayMessage() {
 }
 
 // WELCOME
-let welcomeEnabled = true;
-let welcomeType = 'message';
-let welcomeImageBase64 = null;
-let welcomeEmbedImageBase64 = null;
-
 function setWelcomeType(type, el) {
   welcomeType = type;
   document.querySelectorAll('#page-welcome .msg-tab').forEach(t => t.classList.remove('active'));
