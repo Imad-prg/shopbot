@@ -389,7 +389,52 @@
           <div class="toggle-wrap"><div class="toggle on" id="welcome-toggle" onclick="toggleWelcome()"></div><span id="welcome-status">Activé</span></div>
         </div>
         <div class="form-group"><label>ID du salon welcome</label><input type="text" id="welcome-channel-id" placeholder="1295824990670684259"></div>
-        <div class="form-group"><label>Message <span style="color:var(--gray)">(utilise {user} pour mentionner)</span></label><textarea id="welcome-message" rows="4" placeholder="Bienvenue sur LKWAN STORE, {user} ! 🎮" oninput="updateWelcomePreview()"></textarea></div>
+
+        <!-- TYPE TABS -->
+        <div class="msg-tabs" style="margin-bottom:16px">
+          <div class="msg-tab active" onclick="setWelcomeType('message', this)">💬 Message</div>
+          <div class="msg-tab" onclick="setWelcomeType('embed', this)">📋 Embed</div>
+        </div>
+
+        <!-- MESSAGE FIELDS -->
+        <div id="welcome-normal-fields">
+          <div class="form-group">
+            <label>Message <span style="color:var(--gray)">(utilise {user} pour mentionner)</span></label>
+            <textarea id="welcome-message" rows="4" placeholder="Bienvenue sur LKWAN STORE, {user} ! 🎮" oninput="updateWelcomePreview()"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Image de bienvenue (optionnel)</label>
+            <div class="file-drop" id="welcome-file-drop" onclick="document.getElementById('welcome-image-input').click()">📎 Clique pour ajouter une image</div>
+            <input type="file" id="welcome-image-input" accept="image/*" style="display:none" onchange="handleWelcomeImage(this)">
+          </div>
+          <div class="form-group">
+            <label>URL image (optionnel)</label>
+            <input type="text" id="welcome-image-url" placeholder="https://... ou laisse vide" oninput="updateWelcomePreview()">
+          </div>
+        </div>
+
+        <!-- EMBED FIELDS -->
+        <div id="welcome-embed-fields" style="display:none">
+          <div class="grid-2">
+            <div class="form-group"><label>Titre</label><input type="text" id="welcome-embed-title" placeholder="👋 Bienvenue !" oninput="updateWelcomePreview()"></div>
+            <div class="form-group"><label>Couleur</label><input type="color" id="welcome-embed-color" value="#0066ff" oninput="updateWelcomePreview()"></div>
+          </div>
+          <div class="form-group">
+            <label>Description <span style="color:var(--gray)">(utilise {user} pour mentionner)</span></label>
+            <textarea id="welcome-embed-desc" rows="4" placeholder="Bienvenue sur LKWAN STORE, {user} ! 🎮" oninput="updateWelcomePreview()"></textarea>
+          </div>
+          <div class="form-group"><label>Footer</label><input type="text" id="welcome-embed-footer" placeholder="LKWAN STORE 🎮" oninput="updateWelcomePreview()"></div>
+          <div class="form-group">
+            <label>Image de bienvenue (optionnel)</label>
+            <div class="file-drop" id="welcome-embed-file-drop" onclick="document.getElementById('welcome-embed-image-input').click()">📎 Clique pour ajouter une image</div>
+            <input type="file" id="welcome-embed-image-input" accept="image/*" style="display:none" onchange="handleWelcomeEmbedImage(this)">
+          </div>
+          <div class="form-group">
+            <label>URL image (optionnel)</label>
+            <input type="text" id="welcome-embed-image-url" placeholder="https://... ou laisse vide" oninput="updateWelcomePreview()">
+          </div>
+        </div>
+
         <button class="btn btn-blue" onclick="saveWelcome()">💾 Enregistrer</button>
       </div>
       <div class="card">
@@ -399,7 +444,21 @@
             <div class="discord-avatar">LS</div>
             <div class="discord-content">
               <div class="discord-name">LKWAN STORE <span style="background:#0066ff;color:white;font-size:10px;padding:2px 5px;border-radius:3px;font-weight:700">BOT</span></div>
-              <div class="discord-text" id="welcome-preview">Bienvenue sur LKWAN STORE, @utilisateur ! 🎮</div>
+              <div id="welcome-preview-msg">
+                <div class="discord-text" id="welcome-preview">Bienvenue sur LKWAN STORE, @utilisateur ! 🎮</div>
+                <img id="welcome-preview-img" src="" style="display:none;max-width:400px;border-radius:8px;margin-top:8px">
+              </div>
+              <div id="welcome-preview-embed" style="display:none">
+                <div class="discord-embed">
+                  <div class="embed-bar" id="welcome-embed-bar" style="background:#0066ff"></div>
+                  <div class="embed-body">
+                    <div class="embed-title" id="welcome-preview-embed-title">👋 Bienvenue !</div>
+                    <div class="embed-desc" id="welcome-preview-embed-desc">Bienvenue @utilisateur !</div>
+                    <img id="welcome-preview-embed-img" src="" style="display:none;max-width:100%;border-radius:4px;margin-top:8px">
+                    <div class="embed-footer" id="welcome-preview-embed-footer" style="display:none"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -754,10 +813,81 @@ async function sendSayMessage() {
 }
 
 // WELCOME
+let welcomeEnabled = true;
+let welcomeType = 'message';
+let welcomeImageBase64 = null;
+let welcomeEmbedImageBase64 = null;
+
+function setWelcomeType(type, el) {
+  welcomeType = type;
+  document.querySelectorAll('#page-welcome .msg-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('welcome-normal-fields').style.display = type === 'message' ? 'block' : 'none';
+  document.getElementById('welcome-embed-fields').style.display = type === 'embed' ? 'block' : 'none';
+  document.getElementById('welcome-preview-msg').style.display = type === 'message' ? 'block' : 'none';
+  document.getElementById('welcome-preview-embed').style.display = type === 'embed' ? 'block' : 'none';
+  updateWelcomePreview();
+}
+
+function handleWelcomeImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    welcomeImageBase64 = e.target.result;
+    document.getElementById('welcome-file-drop').innerHTML = `✅ ${file.name}`;
+    document.getElementById('welcome-file-drop').classList.add('has-file');
+    document.getElementById('welcome-preview-img').src = welcomeImageBase64;
+    document.getElementById('welcome-preview-img').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleWelcomeEmbedImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    welcomeEmbedImageBase64 = e.target.result;
+    document.getElementById('welcome-embed-file-drop').innerHTML = `✅ ${file.name}`;
+    document.getElementById('welcome-embed-file-drop').classList.add('has-file');
+    document.getElementById('welcome-preview-embed-img').src = welcomeEmbedImageBase64;
+    document.getElementById('welcome-preview-embed-img').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
 function toggleWelcome() {
   welcomeEnabled = !welcomeEnabled;
   document.getElementById('welcome-toggle').classList.toggle('on', welcomeEnabled);
   document.getElementById('welcome-status').textContent = welcomeEnabled ? 'Activé' : 'Désactivé';
+}
+
+function updateWelcomePreview() {
+  if (welcomeType === 'message') {
+    const msg = document.getElementById('welcome-message').value;
+    document.getElementById('welcome-preview').textContent = msg.replace('{user}', '@utilisateur') || 'Bienvenue !';
+    const imgUrl = document.getElementById('welcome-image-url').value;
+    if (imgUrl) {
+      document.getElementById('welcome-preview-img').src = imgUrl;
+      document.getElementById('welcome-preview-img').style.display = 'block';
+    }
+  } else {
+    const title = document.getElementById('welcome-embed-title').value;
+    const desc = document.getElementById('welcome-embed-desc').value;
+    const color = document.getElementById('welcome-embed-color').value;
+    const footer = document.getElementById('welcome-embed-footer').value;
+    document.getElementById('welcome-embed-bar').style.background = color;
+    document.getElementById('welcome-preview-embed-title').textContent = title || '👋 Bienvenue !';
+    document.getElementById('welcome-preview-embed-desc').textContent = desc.replace('{user}', '@utilisateur') || 'Bienvenue !';
+    document.getElementById('welcome-preview-embed-footer').textContent = footer;
+    document.getElementById('welcome-preview-embed-footer').style.display = footer ? 'block' : 'none';
+    const imgUrl = document.getElementById('welcome-embed-image-url').value;
+    if (imgUrl) {
+      document.getElementById('welcome-preview-embed-img').src = imgUrl;
+      document.getElementById('welcome-preview-embed-img').style.display = 'block';
+    }
+  }
 }
 
 function renderWelcome() {
@@ -767,19 +897,42 @@ function renderWelcome() {
   document.getElementById('welcome-status').textContent = welcomeEnabled ? 'Activé' : 'Désactivé';
   document.getElementById('welcome-channel-id').value = w.channelId || '';
   document.getElementById('welcome-message').value = w.message || '';
+  if (w.embedTitle) document.getElementById('welcome-embed-title').value = w.embedTitle;
+  if (w.embedDesc) document.getElementById('welcome-embed-desc').value = w.embedDesc;
+  if (w.embedColor) document.getElementById('welcome-embed-color').value = w.embedColor;
+  if (w.embedFooter) document.getElementById('welcome-embed-footer').value = w.embedFooter;
+  if (w.type === 'embed') {
+    welcomeType = 'embed';
+    document.querySelectorAll('#page-welcome .msg-tab')[1].click();
+  }
   updateWelcomePreview();
-}
-
-function updateWelcomePreview() {
-  const msg = document.getElementById('welcome-message').value;
-  document.getElementById('welcome-preview').textContent = msg.replace('{user}', '@utilisateur') || 'Bienvenue !';
 }
 
 async function saveWelcome() {
   const channelId = document.getElementById('welcome-channel-id').value.trim();
   const message = document.getElementById('welcome-message').value.trim();
-  const res = await api('POST', '/api/welcome', { enabled: welcomeEnabled, channelId, message });
-  if (res?.success) { appData.welcome = { enabled: welcomeEnabled, channelId, message }; toast('Welcome sauvegardé !'); }
+  const imageUrl = welcomeImageBase64 || document.getElementById('welcome-image-url').value.trim();
+  const embedTitle = document.getElementById('welcome-embed-title').value.trim();
+  const embedDesc = document.getElementById('welcome-embed-desc').value.trim();
+  const embedColor = document.getElementById('welcome-embed-color').value;
+  const embedFooter = document.getElementById('welcome-embed-footer').value.trim();
+  const embedImageUrl = welcomeEmbedImageBase64 || document.getElementById('welcome-embed-image-url').value.trim();
+
+  const payload = {
+    enabled: welcomeEnabled,
+    channelId,
+    type: welcomeType,
+    message,
+    imageUrl,
+    embedTitle,
+    embedDesc,
+    embedColor,
+    embedFooter,
+    embedImageUrl
+  };
+
+  const res = await api('POST', '/api/welcome', payload);
+  if (res?.success) { appData.welcome = { ...appData.welcome, ...payload }; toast('Welcome sauvegardé !'); }
   else toast('Erreur de sauvegarde', 'error');
 }
 </script>
