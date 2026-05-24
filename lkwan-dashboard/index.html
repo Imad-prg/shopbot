@@ -18,498 +18,151 @@
     --border: rgba(0,102,255,0.2);
     --glow: 0 0 20px rgba(0,102,255,0.3);
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Exo 2', sans-serif;
-    background: var(--bg);
-    color: var(--white);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background:
-      radial-gradient(ellipse at 20% 0%, rgba(0,102,255,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 100%, rgba(0,207,255,0.05) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-  }
+  body { font-family: 'Exo 2', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at 20% 0%, rgba(0,102,255,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(0,207,255,0.05) 0%, transparent 60%); pointer-events: none; z-index: 0; }
 
   /* LOGIN */
-  #login-screen {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    background: var(--bg);
-  }
-
-  .login-box {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 48px 40px;
-    width: 380px;
-    text-align: center;
-    box-shadow: var(--glow), 0 40px 80px rgba(0,0,0,0.6);
-    animation: fadeIn 0.5s ease;
-  }
-
-  .login-logo {
-    width: 100px;
-    margin-bottom: 24px;
-    filter: drop-shadow(0 0 12px rgba(0,102,255,0.5));
-  }
-
-  .login-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--white);
-    margin-bottom: 6px;
-    letter-spacing: 2px;
-  }
-
-  .login-sub {
-    color: var(--gray);
-    font-size: 13px;
-    margin-bottom: 32px;
-  }
-
-  .login-input {
-    width: 100%;
-    padding: 14px 18px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--white);
-    font-family: 'Exo 2', sans-serif;
-    font-size: 15px;
-    margin-bottom: 16px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .login-input:focus {
-    border-color: var(--blue);
-    box-shadow: 0 0 0 3px rgba(0,102,255,0.15);
-  }
-
-  .btn-primary {
-    width: 100%;
-    padding: 14px;
-    background: linear-gradient(135deg, var(--blue), var(--blue2));
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 20px rgba(0,102,255,0.3);
-  }
-
+  #login-screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; background: var(--bg); }
+  .login-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 48px 40px; width: 380px; text-align: center; box-shadow: var(--glow), 0 40px 80px rgba(0,0,0,0.6); animation: fadeIn 0.5s ease; }
+  .login-title { font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700; color: var(--white); margin-bottom: 6px; letter-spacing: 2px; }
+  .login-sub { color: var(--gray); font-size: 13px; margin-bottom: 32px; }
+  .login-input { width: 100%; padding: 14px 18px; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; color: var(--white); font-family: 'Exo 2', sans-serif; font-size: 15px; margin-bottom: 16px; outline: none; transition: border-color 0.2s; }
+  .login-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,102,255,0.15); }
+  .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--blue), var(--blue2)); border: none; border-radius: 10px; color: white; font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,102,255,0.3); }
   .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,102,255,0.5); }
-  .btn-primary:active { transform: translateY(0); }
-
-  .login-error {
-    color: #ff4466;
-    font-size: 13px;
-    margin-top: 12px;
-    display: none;
-  }
-
-  /* DASHBOARD */
-  #dashboard { display: none; }
+  .login-error { color: #ff4466; font-size: 13px; margin-top: 12px; display: none; }
 
   /* SIDEBAR */
-  .sidebar {
-    position: fixed;
-    left: 0; top: 0; bottom: 0;
-    width: 240px;
-    background: var(--bg2);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    z-index: 100;
-    padding: 24px 0;
-  }
-
-  .sidebar-logo {
-    padding: 0 24px 24px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .sidebar-logo img {
-    width: 44px;
-    filter: drop-shadow(0 0 8px rgba(0,102,255,0.4));
-  }
-
-  .sidebar-brand {
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 700;
-    font-size: 16px;
-    letter-spacing: 1px;
-    line-height: 1.2;
-  }
-
+  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; padding: 24px 0; }
+  .sidebar-logo { padding: 0 24px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+  .sidebar-brand { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 1px; line-height: 1.2; }
   .sidebar-brand span { color: var(--blue); }
-
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 24px;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: var(--gray);
-    font-weight: 600;
-    font-size: 14px;
-    border-left: 3px solid transparent;
-  }
-
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; cursor: pointer; transition: all 0.2s; color: var(--gray); font-weight: 600; font-size: 14px; border-left: 3px solid transparent; }
   .nav-item:hover { color: var(--white); background: rgba(0,102,255,0.05); }
   .nav-item.active { color: var(--blue); border-left-color: var(--blue); background: rgba(0,102,255,0.08); }
   .nav-item .icon { font-size: 18px; }
-
-  .sidebar-bottom {
-    margin-top: auto;
-    padding: 16px 24px;
-    border-top: 1px solid var(--border);
-    font-size: 12px;
-    color: var(--gray);
-    text-align: center;
-  }
+  .sidebar-bottom { margin-top: auto; padding: 16px 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--gray); text-align: center; }
 
   /* MAIN */
-  .main {
-    margin-left: 240px;
-    padding: 32px;
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-  }
-
-  .page-header {
-    margin-bottom: 28px;
-  }
-
-  .page-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: 1px;
-  }
-
+  .main { margin-left: 240px; padding: 32px; position: relative; z-index: 1; min-height: 100vh; }
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-family: 'Rajdhani', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 1px; }
   .page-title span { color: var(--blue); }
-
   .page-sub { color: var(--gray); font-size: 13px; margin-top: 4px; }
 
   /* CARDS */
-  .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 24px;
-    margin-bottom: 20px;
-  }
-
-  .card-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* GRID */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+  .card-title { font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 1px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 
   /* FORM */
   .form-group { margin-bottom: 16px; }
-
-  label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--gray);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-  }
-
-  input, textarea, select {
-    width: 100%;
-    padding: 11px 14px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--white);
-    font-family: 'Exo 2', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  input:focus, textarea:focus, select:focus {
-    border-color: var(--blue);
-    box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
-  }
-
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  input, textarea, select { width: 100%; padding: 11px 14px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--white); font-family: 'Exo 2', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
+  input:focus, textarea:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,102,255,0.1); }
   textarea { resize: vertical; min-height: 80px; }
-
   select option { background: var(--bg3); }
+  input[type="color"] { padding: 4px; height: 42px; cursor: pointer; }
 
-  .btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-  }
-
-  .btn-blue {
-    background: linear-gradient(135deg, var(--blue), var(--blue2));
-    color: white;
-    box-shadow: 0 3px 12px rgba(0,102,255,0.3);
-  }
-
+  .btn { padding: 10px 20px; border-radius: 8px; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.5px; cursor: pointer; border: none; transition: all 0.2s; }
+  .btn-blue { background: linear-gradient(135deg, var(--blue), var(--blue2)); color: white; box-shadow: 0 3px 12px rgba(0,102,255,0.3); }
   .btn-blue:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(0,102,255,0.4); }
-
   .btn-danger { background: rgba(255,50,80,0.15); color: #ff4466; border: 1px solid rgba(255,50,80,0.3); }
   .btn-danger:hover { background: rgba(255,50,80,0.25); }
-
   .btn-success { background: rgba(0,200,100,0.15); color: #00c864; border: 1px solid rgba(0,200,100,0.3); }
   .btn-success:hover { background: rgba(0,200,100,0.25); }
-
   .btn-sm { padding: 6px 14px; font-size: 12px; }
 
-  /* PRODUCT CARDS */
+  /* PRODUCT */
   .product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-
-  .product-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px;
-    position: relative;
-  }
-
+  .product-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; padding: 18px; position: relative; }
   .product-emoji { font-size: 28px; margin-bottom: 10px; }
-
-  .product-name {
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 700;
-    font-size: 16px;
-    margin-bottom: 4px;
-  }
-
+  .product-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 4px; }
   .product-price { color: var(--blue); font-weight: 600; font-size: 18px; margin-bottom: 4px; }
-
-  .product-stock {
-    font-size: 12px;
-    color: var(--gray);
-  }
-
+  .product-stock { font-size: 12px; color: var(--gray); }
   .product-stock.low { color: #ff9900; }
   .product-stock.out { color: #ff4466; }
-
   .product-actions { display: flex; gap: 8px; margin-top: 14px; }
 
-  /* PROMO CARDS */
-  .promo-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px;
-  }
-
-  .promo-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    letter-spacing: 0.5px;
-  }
-
+  /* PROMO */
+  .promo-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .promo-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 10px; letter-spacing: 0.5px; }
   .promo-badge.active { background: rgba(0,200,100,0.15); color: #00c864; }
   .promo-badge.inactive { background: rgba(100,100,100,0.15); color: var(--gray); }
 
-  /* SAY PREVIEW */
-  .discord-preview {
-    background: #313338;
-    border-radius: 8px;
-    padding: 20px;
-    font-family: 'Whitney', 'Helvetica Neue', sans-serif;
-    margin-top: 16px;
-  }
+  /* MESSAGE TYPE TABS */
+  .msg-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .msg-tab { padding: 8px 18px; border-radius: 8px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; border: 1px solid var(--border); background: var(--bg3); color: var(--gray); transition: all 0.2s; }
+  .msg-tab.active { background: rgba(0,102,255,0.15); border-color: var(--blue); color: var(--blue); }
 
-  .discord-msg {
-    display: flex;
-    gap: 14px;
-  }
+  /* MENTION BUTTONS */
+  .mention-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .mention-btn { padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; border: 1px solid var(--border); background: var(--bg3); color: var(--gray); transition: all 0.2s; }
+  .mention-btn:hover { border-color: var(--blue); color: var(--blue); background: rgba(0,102,255,0.08); }
+  .mention-btn.everyone { border-color: rgba(255,50,80,0.4); color: #ff4466; }
+  .mention-btn.here { border-color: rgba(255,150,0,0.4); color: #ff9900; }
 
-  .discord-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--blue);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: white;
-    font-size: 14px;
-    flex-shrink: 0;
-  }
-
+  /* DISCORD PREVIEW */
+  .discord-preview { background: #313338; border-radius: 8px; padding: 20px; margin-top: 16px; }
+  .discord-msg { display: flex; gap: 14px; }
+  .discord-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--blue); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 14px; flex-shrink: 0; }
   .discord-content { flex: 1; }
+  .discord-name { color: #00b0ff; font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+  .discord-text { color: #dbdee1; font-size: 15px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+  .discord-img { max-width: 400px; max-height: 300px; border-radius: 8px; margin-top: 10px; object-fit: cover; }
 
-  .discord-name {
-    color: #00b0ff;
-    font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 4px;
-  }
+  /* EMBED PREVIEW */
+  .discord-embed { margin-top: 10px; background: #2b2d31; border-radius: 4px; overflow: hidden; max-width: 520px; display: flex; }
+  .embed-bar { width: 4px; flex-shrink: 0; }
+  .embed-body { padding: 12px 16px; flex: 1; }
+  .embed-title { font-weight: 700; font-size: 15px; color: #00b0ff; margin-bottom: 6px; }
+  .embed-desc { color: #dbdee1; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+  .embed-footer { font-size: 12px; color: #87909e; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .embed-img { max-width: 100%; border-radius: 4px; margin-top: 10px; }
 
-  .discord-text {
-    color: #dbdee1;
-    font-size: 15px;
-    line-height: 1.5;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
+  /* MENTION PREVIEW */
+  .mention-tag { background: rgba(88,101,242,0.3); color: #c9cdfb; border-radius: 3px; padding: 0 2px; }
+  .mention-everyone { background: rgba(255,50,80,0.2); color: #ff9999; border-radius: 3px; padding: 0 2px; }
 
-  .discord-img {
-    max-width: 400px;
-    max-height: 300px;
-    border-radius: 8px;
-    margin-top: 10px;
-    object-fit: cover;
-  }
+  /* FILE UPLOAD */
+  .file-drop { border: 2px dashed var(--border); border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; color: var(--gray); font-size: 13px; }
+  .file-drop:hover { border-color: var(--blue); background: rgba(0,102,255,0.05); color: var(--white); }
+  .file-drop.has-file { border-color: rgba(0,200,100,0.4); background: rgba(0,200,100,0.05); }
+
+  /* TOGGLE */
+  .toggle-wrap { display: flex; align-items: center; gap: 12px; }
+  .toggle { width: 44px; height: 24px; background: var(--gray); border-radius: 12px; position: relative; cursor: pointer; transition: background 0.2s; }
+  .toggle.on { background: var(--blue); }
+  .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: left 0.2s; }
+  .toggle.on::after { left: 23px; }
+
+  /* STATS */
+  .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+  .stat-number { font-family: 'Rajdhani', sans-serif; font-size: 32px; font-weight: 700; color: var(--blue); }
+  .stat-label { font-size: 12px; color: var(--gray); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
 
   /* TOAST */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 20px;
-    color: var(--white);
-    font-size: 14px;
-    font-weight: 600;
-    z-index: 9999;
-    box-shadow: var(--glow);
-    transform: translateY(100px);
-    opacity: 0;
-    transition: all 0.3s;
-  }
-
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; color: var(--white); font-size: 14px; font-weight: 600; z-index: 9999; box-shadow: var(--glow); transform: translateY(100px); opacity: 0; transition: all 0.3s; }
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.success { border-color: rgba(0,200,100,0.4); }
   .toast.error { border-color: rgba(255,50,80,0.4); }
 
-  /* PAGE SECTIONS */
+  /* PAGES */
   .section { display: none; }
   .section.active { display: block; }
+  #dashboard { display: none; }
 
-  /* STATS */
-  .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-
-  .stat-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-  }
-
-  .stat-number {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--blue);
-  }
-
-  .stat-label { font-size: 12px; color: var(--gray); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
-
-  /* TOGGLE */
-  .toggle-wrap { display: flex; align-items: center; gap: 12px; }
-
-  .toggle {
-    width: 44px;
-    height: 24px;
-    background: var(--gray);
-    border-radius: 12px;
-    position: relative;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .toggle.on { background: var(--blue); }
-
-  .toggle::after {
-    content: '';
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 18px;
-    height: 18px;
-    background: white;
-    border-radius: 50%;
-    transition: left 0.2s;
-  }
-
-  .toggle.on::after { left: 23px; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
   .page { animation: fadeIn 0.3s ease; }
 
-  /* FILE UPLOAD */
-  .file-drop {
-    border: 2px dashed var(--border);
-    border-radius: 10px;
-    padding: 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: var(--gray);
-    font-size: 13px;
-  }
-
-  .file-drop:hover, .file-drop.drag { border-color: var(--blue); background: rgba(0,102,255,0.05); color: var(--white); }
-  .file-drop.has-file { border-color: rgba(0,200,100,0.4); background: rgba(0,200,100,0.05); }
-
-  .channel-select { margin-bottom: 16px; }
+  /* ROLES */
+  .roles-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .role-tag { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg3); color: var(--gray); transition: all 0.2s; }
+  .role-tag:hover { border-color: var(--blue); color: var(--blue); }
+  .role-tag.selected { background: rgba(0,102,255,0.15); border-color: var(--blue); color: var(--blue); }
 </style>
 </head>
 <body>
@@ -517,7 +170,7 @@
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <img class="login-logo" src="https://i.imgur.com/8Q7fD7z.png" alt="Logo" onerror="this.style.display='none'">
+    <div style="font-size:48px;margin-bottom:16px">🎮</div>
     <div class="login-title">LKWAN STORE</div>
     <div class="login-sub">Panneau d'administration</div>
     <input class="login-input" type="text" id="login-user" placeholder="Identifiant" />
@@ -529,24 +182,19 @@
 
 <!-- DASHBOARD -->
 <div id="dashboard">
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
-      <img src="https://i.imgur.com/8Q7fD7z.png" alt="Logo" onerror="this.style.display='none'" style="width:44px">
+      <div style="font-size:32px">🎮</div>
       <div class="sidebar-brand">LKWAN<br><span>STORE</span></div>
     </div>
-    <div class="nav-item active" onclick="showPage('home')"><span class="icon">🏠</span> Accueil</div>
-    <div class="nav-item" onclick="showPage('products')"><span class="icon">🛒</span> Produits</div>
-    <div class="nav-item" onclick="showPage('promos')"><span class="icon">🎁</span> Promotions</div>
-    <div class="nav-item" onclick="showPage('say')"><span class="icon">📢</span> Say / Post</div>
-    <div class="nav-item" onclick="showPage('welcome')"><span class="icon">👋</span> Welcome</div>
-    <div class="sidebar-bottom">
-      LKWAN STORE Bot v1.0<br>
-      <span style="color:var(--blue)">● En ligne</span>
-    </div>
+    <div class="nav-item active" onclick="showPage('home', this)"><span class="icon">🏠</span> Accueil</div>
+    <div class="nav-item" onclick="showPage('products', this)"><span class="icon">🛒</span> Produits</div>
+    <div class="nav-item" onclick="showPage('promos', this)"><span class="icon">🎁</span> Promotions</div>
+    <div class="nav-item" onclick="showPage('say', this)"><span class="icon">📢</span> Say / Post</div>
+    <div class="nav-item" onclick="showPage('welcome', this)"><span class="icon">👋</span> Welcome</div>
+    <div class="sidebar-bottom">LKWAN STORE Bot v1.0<br><span style="color:var(--blue)">● En ligne</span></div>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
 
     <!-- HOME -->
@@ -556,32 +204,14 @@
         <div class="page-sub">Vue d'ensemble de ton shop</div>
       </div>
       <div class="stat-cards">
-        <div class="stat-card">
-          <div class="stat-number" id="stat-products">0</div>
-          <div class="stat-label">Produits</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="stat-stock">0</div>
-          <div class="stat-label">En stock</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="stat-promos">0</div>
-          <div class="stat-label">Promos actives</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" style="color:#00c864">●</div>
-          <div class="stat-label">Bot en ligne</div>
-        </div>
+        <div class="stat-card"><div class="stat-number" id="stat-products">0</div><div class="stat-label">Produits</div></div>
+        <div class="stat-card"><div class="stat-number" id="stat-stock">0</div><div class="stat-label">En stock</div></div>
+        <div class="stat-card"><div class="stat-number" id="stat-promos">0</div><div class="stat-label">Promos actives</div></div>
+        <div class="stat-card"><div class="stat-number" style="color:#00c864">●</div><div class="stat-label">Bot en ligne</div></div>
       </div>
       <div class="grid-2">
-        <div class="card">
-          <div class="card-title">🛒 Produits récents</div>
-          <div id="home-products-list" style="color:var(--gray);font-size:13px">Chargement...</div>
-        </div>
-        <div class="card">
-          <div class="card-title">🎁 Promos actives</div>
-          <div id="home-promos-list" style="color:var(--gray);font-size:13px">Chargement...</div>
-        </div>
+        <div class="card"><div class="card-title">🛒 Produits récents</div><div id="home-products-list" style="color:var(--gray);font-size:13px">Chargement...</div></div>
+        <div class="card"><div class="card-title">🎁 Promos actives</div><div id="home-promos-list" style="color:var(--gray);font-size:13px">Chargement...</div></div>
       </div>
     </div>
 
@@ -591,41 +221,22 @@
         <div class="page-title">Gestion des <span>produits</span></div>
         <div class="page-sub">Ajoute, modifie ou supprime tes produits</div>
       </div>
-
       <div class="card">
         <div class="card-title">➕ Nouveau produit</div>
         <div class="grid-3">
-          <div class="form-group">
-            <label>Emoji</label>
-            <input type="text" id="p-emoji" placeholder="🎮" maxlength="4">
-          </div>
-          <div class="form-group">
-            <label>Nom du produit</label>
-            <input type="text" id="p-name" placeholder="PSN 10€">
-          </div>
-          <div class="form-group">
-            <label>Prix (€)</label>
-            <input type="number" id="p-price" placeholder="8" step="0.01">
-          </div>
+          <div class="form-group"><label>Emoji</label><input type="text" id="p-emoji" placeholder="🎮" maxlength="4"></div>
+          <div class="form-group"><label>Nom du produit</label><input type="text" id="p-name" placeholder="PSN 10€"></div>
+          <div class="form-group"><label>Prix (€)</label><input type="number" id="p-price" placeholder="8" step="0.01"></div>
         </div>
         <div class="grid-2">
-          <div class="form-group">
-            <label>Stock (unités)</label>
-            <input type="number" id="p-stock" placeholder="10">
-          </div>
-          <div class="form-group">
-            <label>Description (optionnel)</label>
-            <input type="text" id="p-desc" placeholder="Carte cadeau PSN">
-          </div>
+          <div class="form-group"><label>Stock (unités)</label><input type="number" id="p-stock" placeholder="10"></div>
+          <div class="form-group"><label>Description (optionnel)</label><input type="text" id="p-desc" placeholder="Carte cadeau PSN"></div>
         </div>
         <button class="btn btn-blue" onclick="addProduct()">➕ Ajouter le produit</button>
       </div>
-
       <div class="card">
         <div class="card-title">📦 Mes produits</div>
-        <div class="product-list" id="products-list">
-          <div style="color:var(--gray);font-size:13px">Aucun produit pour l'instant</div>
-        </div>
+        <div class="product-list" id="products-list"><div style="color:var(--gray);font-size:13px">Aucun produit pour l'instant</div></div>
       </div>
     </div>
 
@@ -635,34 +246,18 @@
         <div class="page-title">Gestion des <span>promotions</span></div>
         <div class="page-sub">Crée et gère tes offres spéciales</div>
       </div>
-
       <div class="card">
         <div class="card-title">➕ Nouvelle promotion</div>
         <div class="grid-2">
-          <div class="form-group">
-            <label>Titre de la promo</label>
-            <input type="text" id="promo-title" placeholder="BLACK FRIDAY -20%">
-          </div>
-          <div class="form-group">
-            <label>Statut</label>
-            <select id="promo-active">
-              <option value="true">✅ Active</option>
-              <option value="false">❌ Inactive</option>
-            </select>
-          </div>
+          <div class="form-group"><label>Titre de la promo</label><input type="text" id="promo-title" placeholder="BLACK FRIDAY -20%"></div>
+          <div class="form-group"><label>Statut</label><select id="promo-active"><option value="true">✅ Active</option><option value="false">❌ Inactive</option></select></div>
         </div>
-        <div class="form-group">
-          <label>Description</label>
-          <textarea id="promo-desc" placeholder="20% de réduction sur tous les PSN ce weekend !"></textarea>
-        </div>
+        <div class="form-group"><label>Description</label><textarea id="promo-desc" placeholder="20% de réduction sur tous les PSN ce weekend !"></textarea></div>
         <button class="btn btn-blue" onclick="addPromo()">➕ Ajouter la promotion</button>
       </div>
-
       <div class="card">
         <div class="card-title">🎁 Mes promotions</div>
-        <div id="promos-list" style="display:grid;gap:12px">
-          <div style="color:var(--gray);font-size:13px">Aucune promotion pour l'instant</div>
-        </div>
+        <div id="promos-list" style="display:grid;gap:12px"><div style="color:var(--gray);font-size:13px">Aucune promotion pour l'instant</div></div>
       </div>
     </div>
 
@@ -670,32 +265,67 @@
     <div id="page-say" class="section page">
       <div class="page-header">
         <div class="page-title">Poster un <span>message</span></div>
-        <div class="page-sub">Envoie un message dans n'importe quel salon</div>
+        <div class="page-sub">Envoie un message ou embed dans n'importe quel salon</div>
       </div>
 
       <div class="grid-2">
         <div>
           <div class="card">
             <div class="card-title">📝 Rédiger</div>
-            <div class="form-group channel-select">
+
+            <!-- TYPE TABS -->
+            <div class="msg-tabs">
+              <div class="msg-tab active" onclick="setMsgType('normal', this)">💬 Message</div>
+              <div class="msg-tab" onclick="setMsgType('embed', this)">📋 Embed</div>
+            </div>
+
+            <!-- SALON -->
+            <div class="form-group">
               <label>Salon Discord cible</label>
-              <select id="say-channel">
-                <option value="">Chargement des salons...</option>
-              </select>
+              <select id="say-channel"><option value="">Chargement des salons...</option></select>
             </div>
+
+            <!-- MENTIONS -->
             <div class="form-group">
-              <label>Message</label>
-              <textarea id="say-message" placeholder="Ton message ici..." rows="5" oninput="updatePreview()"></textarea>
-            </div>
-            <div class="form-group">
-              <label>Image (optionnel)</label>
-              <div class="file-drop" id="file-drop" onclick="document.getElementById('say-image').click()">
-                📎 Clique pour ajouter une image<br>
-                <small>PNG, JPG, GIF</small>
+              <label>Mentions</label>
+              <div class="mention-btns">
+                <div class="mention-btn everyone" onclick="insertMention('@everyone')">@everyone</div>
+                <div class="mention-btn here" onclick="insertMention('@here')">@here</div>
               </div>
-              <input type="file" id="say-image" accept="image/*" style="display:none" onchange="handleImage(this)">
+              <div class="roles-list" id="roles-list">
+                <div style="color:var(--gray);font-size:12px">Chargement des rôles...</div>
+              </div>
             </div>
-            <div style="display:flex;gap:10px">
+
+            <!-- MESSAGE NORMAL -->
+            <div id="normal-fields">
+              <div class="form-group">
+                <label>Message</label>
+                <textarea id="say-message" placeholder="Ton message ici..." rows="4" oninput="updatePreview()"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Image (optionnel)</label>
+                <div class="file-drop" id="file-drop" onclick="document.getElementById('say-image').click()">📎 Clique pour ajouter une image<br><small>PNG, JPG, GIF</small></div>
+                <input type="file" id="say-image" accept="image/*" style="display:none" onchange="handleImage(this)">
+              </div>
+            </div>
+
+            <!-- EMBED FIELDS -->
+            <div id="embed-fields" style="display:none">
+              <div class="grid-2">
+                <div class="form-group"><label>Titre de l'embed</label><input type="text" id="embed-title" placeholder="🎮 LKWAN STORE" oninput="updatePreview()"></div>
+                <div class="form-group"><label>Couleur</label><input type="color" id="embed-color" value="#0066ff" oninput="updatePreview()"></div>
+              </div>
+              <div class="form-group"><label>Description</label><textarea id="embed-desc" placeholder="Contenu de l'embed..." rows="4" oninput="updatePreview()"></textarea></div>
+              <div class="form-group"><label>Footer (optionnel)</label><input type="text" id="embed-footer" placeholder="LKWAN STORE 🎮" oninput="updatePreview()"></div>
+              <div class="form-group">
+                <label>Image (optionnel)</label>
+                <div class="file-drop" id="file-drop-embed" onclick="document.getElementById('embed-image').click()">📎 Clique pour ajouter une image</div>
+                <input type="file" id="embed-image" accept="image/*" style="display:none" onchange="handleEmbedImage(this)">
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:8px">
               <button class="btn btn-blue" onclick="sendSayMessage()" style="flex:1">📢 Envoyer</button>
               <button class="btn btn-danger" onclick="clearSay()">✕ Vider</button>
             </div>
@@ -710,8 +340,18 @@
                 <div class="discord-avatar">LS</div>
                 <div class="discord-content">
                   <div class="discord-name">LKWAN STORE <span style="background:#0066ff;color:white;font-size:10px;padding:2px 5px;border-radius:3px;font-weight:700">BOT</span></div>
+                  <div id="preview-mention" style="color:#c9cdfb;font-size:14px;margin-bottom:4px;display:none"></div>
                   <div class="discord-text" id="preview-text">Ton message apparaîtra ici...</div>
                   <img class="discord-img" id="preview-img" src="" style="display:none">
+                  <div class="discord-embed" id="preview-embed" style="display:none">
+                    <div class="embed-bar" id="preview-embed-bar" style="background:#0066ff"></div>
+                    <div class="embed-body">
+                      <div class="embed-title" id="preview-embed-title"></div>
+                      <div class="embed-desc" id="preview-embed-desc"></div>
+                      <img class="embed-img" id="preview-embed-img" src="" style="display:none">
+                      <div class="embed-footer" id="preview-embed-footer" style="display:none"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -726,27 +366,16 @@
         <div class="page-title">Message de <span>bienvenue</span></div>
         <div class="page-sub">Configure le message envoyé lors des arrivées</div>
       </div>
-
       <div class="card">
         <div class="card-title">⚙️ Configuration</div>
         <div class="form-group">
           <label>Statut</label>
-          <div class="toggle-wrap">
-            <div class="toggle on" id="welcome-toggle" onclick="toggleWelcome()"></div>
-            <span id="welcome-status">Activé</span>
-          </div>
+          <div class="toggle-wrap"><div class="toggle on" id="welcome-toggle" onclick="toggleWelcome()"></div><span id="welcome-status">Activé</span></div>
         </div>
-        <div class="form-group">
-          <label>ID du salon welcome</label>
-          <input type="text" id="welcome-channel-id" placeholder="1295824990670684259">
-        </div>
-        <div class="form-group">
-          <label>Message de bienvenue <span style="color:var(--gray)">(utilise {user} pour mentionner)</span></label>
-          <textarea id="welcome-message" rows="4" placeholder="Bienvenue sur LKWAN STORE, {user} ! 🎮"></textarea>
-        </div>
+        <div class="form-group"><label>ID du salon welcome</label><input type="text" id="welcome-channel-id" placeholder="1295824990670684259"></div>
+        <div class="form-group"><label>Message <span style="color:var(--gray)">(utilise {user} pour mentionner)</span></label><textarea id="welcome-message" rows="4" placeholder="Bienvenue sur LKWAN STORE, {user} ! 🎮" oninput="updateWelcomePreview()"></textarea></div>
         <button class="btn btn-blue" onclick="saveWelcome()">💾 Enregistrer</button>
       </div>
-
       <div class="card">
         <div class="card-title">👁️ Aperçu</div>
         <div class="discord-preview">
@@ -764,31 +393,27 @@
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ================================
-// CONFIG — change ces valeurs !
-// ================================
 const API_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000'
   : 'https://worker-production-312a.up.railway.app';
 
-const CREDENTIALS = {
-  username: 'lkwan',
-  password: 'Lkw@n$T0re#2026!'
-};
-
+const CREDENTIALS = { username: 'lkwan', password: 'Lkw@n$T0re#2026!' };
 const API_KEY = 'lkwan-secret-key';
 
-// ================================
+let appData = { products: [], promos: [], welcome: {} };
+let sayImageUrl = null;
+let embedImageUrl = null;
+let selectedMentions = [];
+let currentMsgType = 'normal';
+let welcomeEnabled = true;
+
 // AUTH
-// ================================
 function doLogin() {
   const user = document.getElementById('login-user').value;
   const pass = document.getElementById('login-pass').value;
-
   if (user === CREDENTIALS.username && pass === CREDENTIALS.password) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
@@ -797,34 +422,21 @@ function doLogin() {
     document.getElementById('login-error').style.display = 'block';
   }
 }
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
-document.getElementById('login-pass').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
-
-// ================================
 // API
-// ================================
 async function api(method, path, body) {
   try {
     const res = await fetch(API_URL + path, {
       method,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY
-      },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
       body: body ? JSON.stringify(body) : undefined
     });
     return await res.json();
-  } catch (e) {
-    console.error(e);
-    return null;
-  }
+  } catch (e) { console.error(e); return null; }
 }
 
-// ================================
 // TOAST
-// ================================
 function toast(msg, type = 'success') {
   const t = document.getElementById('toast');
   t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
@@ -832,238 +444,157 @@ function toast(msg, type = 'success') {
   setTimeout(() => t.className = 'toast', 3000);
 }
 
-// ================================
-// NAVIGATION
-// ================================
-function showPage(name) {
+// NAV
+function showPage(name, el) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
-  event.currentTarget.classList.add('active');
-  if (name === 'say') loadChannels();
+  el.classList.add('active');
+  if (name === 'say') { loadChannels(); loadRoles(); }
 }
 
-// ================================
 // DATA
-// ================================
-let appData = { products: [], promos: [], welcome: {} };
-
 async function loadAll() {
   const data = await api('GET', '/api/data');
-  if (data) {
-    appData = data;
-    renderAll();
-  }
+  if (data) { appData = data; renderAll(); }
 }
 
-function renderAll() {
-  renderProducts();
-  renderPromos();
-  renderHome();
-  renderWelcome();
-}
+function renderAll() { renderProducts(); renderPromos(); renderHome(); renderWelcome(); }
 
-// ================================
 // HOME
-// ================================
 function renderHome() {
   const products = appData.products || [];
   const promos = appData.promos || [];
-
   document.getElementById('stat-products').textContent = products.length;
   document.getElementById('stat-stock').textContent = products.filter(p => p.stock > 0).length;
   document.getElementById('stat-promos').textContent = promos.filter(p => p.active).length;
-
   const pl = document.getElementById('home-products-list');
-  if (products.length === 0) {
-    pl.innerHTML = '<span style="color:var(--gray)">Aucun produit</span>';
-  } else {
-    pl.innerHTML = products.slice(0, 4).map(p =>
-      `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
-        <span>${p.emoji || '🎮'} ${p.name}</span>
-        <span style="color:var(--blue);font-weight:600">${p.price}€</span>
-      </div>`
-    ).join('');
-  }
-
+  pl.innerHTML = products.length === 0 ? '<span style="color:var(--gray)">Aucun produit</span>' :
+    products.slice(0, 4).map(p => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span>${p.emoji || '🎮'} ${p.name}</span><span style="color:var(--blue);font-weight:600">${p.price}€</span></div>`).join('');
   const prl = document.getElementById('home-promos-list');
-  const activePromos = promos.filter(p => p.active);
-  if (activePromos.length === 0) {
-    prl.innerHTML = '<span style="color:var(--gray)">Aucune promo active</span>';
-  } else {
-    prl.innerHTML = activePromos.map(p =>
-      `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
-        <span style="color:#00c864;font-weight:600">🎁 ${p.title}</span>
-        <div style="color:var(--gray);font-size:12px;margin-top:2px">${p.description}</div>
-      </div>`
-    ).join('');
-  }
+  const ap = promos.filter(p => p.active);
+  prl.innerHTML = ap.length === 0 ? '<span style="color:var(--gray)">Aucune promo active</span>' :
+    ap.map(p => `<div style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:#00c864;font-weight:600">🎁 ${p.title}</span><div style="color:var(--gray);font-size:12px;margin-top:2px">${p.description}</div></div>`).join('');
 }
 
-// ================================
 // PRODUCTS
-// ================================
 function addProduct() {
   const emoji = document.getElementById('p-emoji').value || '🎮';
   const name = document.getElementById('p-name').value.trim();
   const price = parseFloat(document.getElementById('p-price').value);
   const stock = parseInt(document.getElementById('p-stock').value);
   const desc = document.getElementById('p-desc').value.trim();
-
-  if (!name || isNaN(price) || isNaN(stock)) {
-    toast('Remplis tous les champs obligatoires', 'error');
-    return;
-  }
-
+  if (!name || isNaN(price) || isNaN(stock)) { toast('Remplis tous les champs obligatoires', 'error'); return; }
   appData.products.push({ id: Date.now(), emoji, name, price, stock, description: desc });
   saveProducts();
-
-  document.getElementById('p-emoji').value = '';
-  document.getElementById('p-name').value = '';
-  document.getElementById('p-price').value = '';
-  document.getElementById('p-stock').value = '';
-  document.getElementById('p-desc').value = '';
+  ['p-emoji','p-name','p-price','p-stock','p-desc'].forEach(id => document.getElementById(id).value = '');
 }
 
-function deleteProduct(id) {
-  appData.products = appData.products.filter(p => p.id !== id);
-  saveProducts();
-}
-
-function updateStock(id, delta) {
-  const p = appData.products.find(p => p.id === id);
-  if (p) {
-    p.stock = Math.max(0, p.stock + delta);
-    saveProducts();
-  }
-}
+function deleteProduct(id) { appData.products = appData.products.filter(p => p.id !== id); saveProducts(); }
+function updateStock(id, delta) { const p = appData.products.find(p => p.id === id); if (p) { p.stock = Math.max(0, p.stock + delta); saveProducts(); } }
 
 async function saveProducts() {
   const res = await api('POST', '/api/products', appData.products);
-  if (res?.success) {
-    toast('Produits sauvegardés !');
-    renderProducts();
-    renderHome();
-  } else {
-    toast('Erreur de sauvegarde', 'error');
-  }
+  if (res?.success) { toast('Produits sauvegardés !'); renderProducts(); renderHome(); }
+  else toast('Erreur de sauvegarde', 'error');
 }
 
 function renderProducts() {
   const list = document.getElementById('products-list');
   const products = appData.products || [];
-
-  if (products.length === 0) {
-    list.innerHTML = '<div style="color:var(--gray);font-size:13px">Aucun produit pour l\'instant</div>';
-    return;
-  }
-
+  if (products.length === 0) { list.innerHTML = '<div style="color:var(--gray);font-size:13px">Aucun produit</div>'; return; }
   list.innerHTML = products.map(p => {
-    const stockClass = p.stock === 0 ? 'out' : p.stock < 3 ? 'low' : '';
-    const stockLabel = p.stock === 0 ? '❌ Rupture' : p.stock < 3 ? `⚠️ ${p.stock} restants` : `✅ ${p.stock} en stock`;
-    return `
-      <div class="product-card">
-        <div class="product-emoji">${p.emoji || '🎮'}</div>
-        <div class="product-name">${p.name}</div>
-        <div class="product-price">${p.price}€</div>
-        <div class="product-stock ${stockClass}">${stockLabel}</div>
-        ${p.description ? `<div style="color:var(--gray);font-size:12px;margin-top:4px">${p.description}</div>` : ''}
-        <div class="product-actions">
-          <button class="btn btn-success btn-sm" onclick="updateStock(${p.id}, 1)">+1</button>
-          <button class="btn btn-danger btn-sm" onclick="updateStock(${p.id}, -1)">-1</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">🗑</button>
-        </div>
-      </div>
-    `;
+    const sc = p.stock === 0 ? 'out' : p.stock < 3 ? 'low' : '';
+    const sl = p.stock === 0 ? '❌ Rupture' : p.stock < 3 ? `⚠️ ${p.stock} restants` : `✅ ${p.stock} en stock`;
+    return `<div class="product-card"><div class="product-emoji">${p.emoji || '🎮'}</div><div class="product-name">${p.name}</div><div class="product-price">${p.price}€</div><div class="product-stock ${sc}">${sl}</div>${p.description ? `<div style="color:var(--gray);font-size:12px;margin-top:4px">${p.description}</div>` : ''}<div class="product-actions"><button class="btn btn-success btn-sm" onclick="updateStock(${p.id},1)">+1</button><button class="btn btn-danger btn-sm" onclick="updateStock(${p.id},-1)">-1</button><button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">🗑</button></div></div>`;
   }).join('');
 }
 
-// ================================
 // PROMOS
-// ================================
 function addPromo() {
   const title = document.getElementById('promo-title').value.trim();
   const desc = document.getElementById('promo-desc').value.trim();
   const active = document.getElementById('promo-active').value === 'true';
-
-  if (!title || !desc) {
-    toast('Remplis tous les champs', 'error');
-    return;
-  }
-
+  if (!title || !desc) { toast('Remplis tous les champs', 'error'); return; }
   appData.promos.push({ id: Date.now(), title, description: desc, active });
   savePromos();
-
   document.getElementById('promo-title').value = '';
   document.getElementById('promo-desc').value = '';
 }
 
-function deletePromo(id) {
-  appData.promos = appData.promos.filter(p => p.id !== id);
-  savePromos();
-}
-
-function togglePromo(id) {
-  const p = appData.promos.find(p => p.id === id);
-  if (p) { p.active = !p.active; savePromos(); }
-}
+function deletePromo(id) { appData.promos = appData.promos.filter(p => p.id !== id); savePromos(); }
+function togglePromo(id) { const p = appData.promos.find(p => p.id === id); if (p) { p.active = !p.active; savePromos(); } }
 
 async function savePromos() {
   const res = await api('POST', '/api/promos', appData.promos);
-  if (res?.success) {
-    toast('Promotions sauvegardées !');
-    renderPromos();
-    renderHome();
-  } else {
-    toast('Erreur de sauvegarde', 'error');
-  }
+  if (res?.success) { toast('Promotions sauvegardées !'); renderPromos(); renderHome(); }
+  else toast('Erreur de sauvegarde', 'error');
 }
 
 function renderPromos() {
   const list = document.getElementById('promos-list');
   const promos = appData.promos || [];
-
-  if (promos.length === 0) {
-    list.innerHTML = '<div style="color:var(--gray);font-size:13px">Aucune promotion pour l\'instant</div>';
-    return;
-  }
-
-  list.innerHTML = promos.map(p => `
-    <div class="promo-card">
-      <div class="promo-badge ${p.active ? 'active' : 'inactive'}">${p.active ? '● ACTIVE' : '● INACTIVE'}</div>
-      <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:17px;margin-bottom:6px">${p.title}</div>
-      <div style="color:var(--gray);font-size:13px;margin-bottom:14px">${p.description}</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-success btn-sm" onclick="togglePromo(${p.id})">${p.active ? '⏸ Désactiver' : '▶ Activer'}</button>
-        <button class="btn btn-danger btn-sm" onclick="deletePromo(${p.id})">🗑 Supprimer</button>
-      </div>
-    </div>
-  `).join('');
+  if (promos.length === 0) { list.innerHTML = '<div style="color:var(--gray);font-size:13px">Aucune promotion</div>'; return; }
+  list.innerHTML = promos.map(p => `<div class="promo-card"><div class="promo-badge ${p.active ? 'active' : 'inactive'}">${p.active ? '● ACTIVE' : '● INACTIVE'}</div><div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:17px;margin-bottom:6px">${p.title}</div><div style="color:var(--gray);font-size:13px;margin-bottom:14px">${p.description}</div><div style="display:flex;gap:8px"><button class="btn btn-success btn-sm" onclick="togglePromo(${p.id})">${p.active ? '⏸ Désactiver' : '▶ Activer'}</button><button class="btn btn-danger btn-sm" onclick="deletePromo(${p.id})">🗑 Supprimer</button></div></div>`).join('');
 }
 
-// ================================
 // SAY
-// ================================
-let sayImageUrl = null;
+function setMsgType(type, el) {
+  currentMsgType = type;
+  document.querySelectorAll('.msg-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('normal-fields').style.display = type === 'normal' ? 'block' : 'none';
+  document.getElementById('embed-fields').style.display = type === 'embed' ? 'block' : 'none';
+  document.getElementById('preview-embed').style.display = type === 'embed' ? 'flex' : 'none';
+  document.getElementById('preview-text').style.display = type === 'normal' ? 'block' : 'none';
+  updatePreview();
+}
+
+function insertMention(mention) {
+  if (currentMsgType === 'normal') {
+    const ta = document.getElementById('say-message');
+    const pos = ta.selectionStart;
+    ta.value = ta.value.slice(0, pos) + mention + ' ' + ta.value.slice(pos);
+  } else {
+    const ta = document.getElementById('embed-desc');
+    const pos = ta.selectionStart;
+    ta.value = ta.value.slice(0, pos) + mention + ' ' + ta.value.slice(pos);
+  }
+  updatePreview();
+}
 
 async function loadChannels() {
   const channels = await api('GET', '/api/channels');
   const sel = document.getElementById('say-channel');
-  if (channels && channels.length > 0) {
-    sel.innerHTML = channels.map(c => `<option value="${c.id}">#${c.name}</option>`).join('');
+  if (channels && channels.length > 0) sel.innerHTML = channels.map(c => `<option value="${c.id}">#${c.name}</option>`).join('');
+  else sel.innerHTML = '<option value="">⚠️ Impossible de charger les salons</option>';
+}
+
+async function loadRoles() {
+  const roles = await api('GET', '/api/roles');
+  const list = document.getElementById('roles-list');
+  if (roles && roles.length > 0) {
+    list.innerHTML = roles.map(r => `<div class="role-tag" onclick="toggleRole('${r.id}', '${r.name}', this)" style="border-color:${r.color || 'var(--border)'};color:${r.color || 'var(--gray)'}">@${r.name}</div>`).join('');
   } else {
-    sel.innerHTML = '<option value="">⚠️ Impossible de charger les salons</option>';
+    list.innerHTML = '<div style="color:var(--gray);font-size:12px">Aucun rôle disponible</div>';
   }
+}
+
+function toggleRole(id, name, el) {
+  el.classList.toggle('selected');
+  const idx = selectedMentions.indexOf(`<@&${id}>`);
+  if (idx === -1) selectedMentions.push(`<@&${id}>`);
+  else selectedMentions.splice(idx, 1);
+  updatePreview();
 }
 
 function handleImage(input) {
   const file = input.files[0];
   if (!file) return;
-
   const reader = new FileReader();
   reader.onload = e => {
     sayImageUrl = e.target.result;
-    document.getElementById('file-drop').textContent = `✅ ${file.name}`;
+    document.getElementById('file-drop').innerHTML = `✅ ${file.name}`;
     document.getElementById('file-drop').classList.add('has-file');
     document.getElementById('preview-img').src = sayImageUrl;
     document.getElementById('preview-img').style.display = 'block';
@@ -1071,53 +602,103 @@ function handleImage(input) {
   reader.readAsDataURL(file);
 }
 
+function handleEmbedImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    embedImageUrl = e.target.result;
+    document.getElementById('file-drop-embed').innerHTML = `✅ ${file.name}`;
+    document.getElementById('file-drop-embed').classList.add('has-file');
+    document.getElementById('preview-embed-img').src = embedImageUrl;
+    document.getElementById('preview-embed-img').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
 function updatePreview() {
-  const msg = document.getElementById('say-message').value;
-  document.getElementById('preview-text').textContent = msg || 'Ton message apparaîtra ici...';
+  const mentionEl = document.getElementById('preview-mention');
+  if (selectedMentions.length > 0) {
+    mentionEl.style.display = 'block';
+    mentionEl.innerHTML = selectedMentions.map(m => {
+      if (m === '@everyone' || m === '@here') return `<span class="mention-everyone">${m}</span>`;
+      return `<span class="mention-tag">${m}</span>`;
+    }).join(' ');
+  } else { mentionEl.style.display = 'none'; }
+
+  if (currentMsgType === 'normal') {
+    const msg = document.getElementById('say-message').value;
+    document.getElementById('preview-text').textContent = msg || 'Ton message apparaîtra ici...';
+    document.getElementById('preview-embed').style.display = 'none';
+  } else {
+    document.getElementById('preview-text').style.display = 'none';
+    document.getElementById('preview-embed').style.display = 'flex';
+    const title = document.getElementById('embed-title').value;
+    const desc = document.getElementById('embed-desc').value;
+    const color = document.getElementById('embed-color').value;
+    const footer = document.getElementById('embed-footer').value;
+    document.getElementById('preview-embed-bar').style.background = color;
+    document.getElementById('preview-embed-title').textContent = title || 'Titre de l\'embed';
+    document.getElementById('preview-embed-desc').textContent = desc || 'Description de l\'embed...';
+    document.getElementById('preview-embed-footer').textContent = footer;
+    document.getElementById('preview-embed-footer').style.display = footer ? 'block' : 'none';
+  }
 }
 
 function clearSay() {
   document.getElementById('say-message').value = '';
   document.getElementById('say-image').value = '';
-  document.getElementById('file-drop').textContent = '📎 Clique pour ajouter une image\nPNG, JPG, GIF';
+  document.getElementById('embed-title').value = '';
+  document.getElementById('embed-desc').value = '';
+  document.getElementById('embed-footer').value = '';
+  document.getElementById('embed-color').value = '#0066ff';
+  document.getElementById('file-drop').innerHTML = '📎 Clique pour ajouter une image<br><small>PNG, JPG, GIF</small>';
   document.getElementById('file-drop').classList.remove('has-file');
+  document.getElementById('file-drop-embed').innerHTML = '📎 Clique pour ajouter une image';
+  document.getElementById('file-drop-embed').classList.remove('has-file');
   document.getElementById('preview-img').style.display = 'none';
+  document.getElementById('preview-embed-img').style.display = 'none';
   sayImageUrl = null;
+  embedImageUrl = null;
+  selectedMentions = [];
+  document.querySelectorAll('.role-tag').forEach(r => r.classList.remove('selected'));
   updatePreview();
 }
 
 async function sendSayMessage() {
   const channelId = document.getElementById('say-channel').value;
-  const message = document.getElementById('say-message').value.trim();
-
   if (!channelId) { toast('Sélectionne un salon', 'error'); return; }
-  if (!message && !sayImageUrl) { toast('Écris un message ou ajoute une image', 'error'); return; }
 
-  const res = await api('POST', '/api/say', {
-    channelId,
-    message: message || '',
-    imageUrl: sayImageUrl
-  });
+  const mentionStr = selectedMentions.join(' ');
 
-  if (res?.success) {
-    toast('Message envoyé !');
-    clearSay();
+  let payload = { channelId, mentionStr };
+
+  if (currentMsgType === 'normal') {
+    const message = document.getElementById('say-message').value.trim();
+    if (!message && !sayImageUrl) { toast('Écris un message ou ajoute une image', 'error'); return; }
+    payload.message = message;
+    payload.imageUrl = sayImageUrl;
+    payload.type = 'normal';
   } else {
-    toast('Erreur lors de l\'envoi', 'error');
+    const title = document.getElementById('embed-title').value.trim();
+    const desc = document.getElementById('embed-desc').value.trim();
+    const color = document.getElementById('embed-color').value;
+    const footer = document.getElementById('embed-footer').value.trim();
+    if (!title && !desc) { toast('Remplis le titre ou la description', 'error'); return; }
+    payload.embed = { title, description: desc, color, footer, imageUrl: embedImageUrl };
+    payload.type = 'embed';
   }
+
+  const res = await api('POST', '/api/say', payload);
+  if (res?.success) { toast('Message envoyé !'); clearSay(); }
+  else toast('Erreur lors de l\'envoi', 'error');
 }
 
-// ================================
 // WELCOME
-// ================================
-let welcomeEnabled = true;
-
 function toggleWelcome() {
   welcomeEnabled = !welcomeEnabled;
-  const toggle = document.getElementById('welcome-toggle');
-  const status = document.getElementById('welcome-status');
-  toggle.classList.toggle('on', welcomeEnabled);
-  status.textContent = welcomeEnabled ? 'Activé' : 'Désactivé';
+  document.getElementById('welcome-toggle').classList.toggle('on', welcomeEnabled);
+  document.getElementById('welcome-status').textContent = welcomeEnabled ? 'Activé' : 'Désactivé';
 }
 
 function renderWelcome() {
@@ -1127,29 +708,20 @@ function renderWelcome() {
   document.getElementById('welcome-status').textContent = welcomeEnabled ? 'Activé' : 'Désactivé';
   document.getElementById('welcome-channel-id').value = w.channelId || '';
   document.getElementById('welcome-message').value = w.message || '';
-  document.getElementById('welcome-preview').textContent = (w.message || '').replace('{user}', '@utilisateur') || 'Bienvenue !';
+  updateWelcomePreview();
 }
 
-document.getElementById('welcome-message').addEventListener('input', function() {
-  document.getElementById('welcome-preview').textContent = this.value.replace('{user}', '@utilisateur') || 'Bienvenue !';
-});
+function updateWelcomePreview() {
+  const msg = document.getElementById('welcome-message').value;
+  document.getElementById('welcome-preview').textContent = msg.replace('{user}', '@utilisateur') || 'Bienvenue !';
+}
 
 async function saveWelcome() {
   const channelId = document.getElementById('welcome-channel-id').value.trim();
   const message = document.getElementById('welcome-message').value.trim();
-
-  const res = await api('POST', '/api/welcome', {
-    enabled: welcomeEnabled,
-    channelId,
-    message
-  });
-
-  if (res?.success) {
-    appData.welcome = { enabled: welcomeEnabled, channelId, message };
-    toast('Welcome sauvegardé !');
-  } else {
-    toast('Erreur de sauvegarde', 'error');
-  }
+  const res = await api('POST', '/api/welcome', { enabled: welcomeEnabled, channelId, message });
+  if (res?.success) { appData.welcome = { enabled: welcomeEnabled, channelId, message }; toast('Welcome sauvegardé !'); }
+  else toast('Erreur de sauvegarde', 'error');
 }
 </script>
 </body>
