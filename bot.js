@@ -294,7 +294,8 @@ client.on("interactionCreate", async (interaction) => {
 // ================================
 const app = express();
 app.use(express.json());
-app.use(require("cors")());
+app.use(require("cors")({ origin: '*', methods: ['GET','POST','OPTIONS'], allowedHeaders: ['Content-Type','x-api-key'] }));
+app.options('*', require("cors")());
 
 const API_KEY = process.env.API_KEY || "lkwan-secret-key";
 
