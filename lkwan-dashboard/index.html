@@ -163,6 +163,18 @@
   .role-tag { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg3); color: var(--gray); transition: all 0.2s; }
   .role-tag:hover { border-color: var(--blue); color: var(--blue); }
   .role-tag.selected { background: rgba(0,102,255,0.15); border-color: var(--blue); color: var(--blue); }
+
+  /* SEARCHABLE CHANNEL */
+  .channel-search-wrap { position: relative; }
+  .channel-search-input { width: 100%; padding: 11px 14px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--white); font-family: 'Exo 2', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; cursor: pointer; }
+  .channel-search-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,102,255,0.1); }
+  .channel-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-top: 4px; max-height: 200px; overflow-y: auto; z-index: 999; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .channel-dropdown.open { display: block; }
+  .channel-option { padding: 10px 14px; cursor: pointer; font-size: 13px; color: var(--gray); transition: all 0.15s; }
+  .channel-option:hover, .channel-option.selected { background: rgba(0,102,255,0.1); color: var(--white); }
+  .channel-dropdown::-webkit-scrollbar { width: 4px; }
+  .channel-dropdown::-webkit-scrollbar-track { background: var(--bg3); }
+  .channel-dropdown::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 2px; }
 </style>
 </head>
 <body>
@@ -282,7 +294,11 @@
             <!-- SALON -->
             <div class="form-group">
               <label>Salon Discord cible</label>
-              <select id="say-channel"><option value="">Chargement des salons...</option></select>
+              <div class="channel-search-wrap" id="channel-wrap">
+                <input type="text" class="channel-search-input" id="channel-search" placeholder="🔍 Rechercher un salon..." autocomplete="off" oninput="filterChannels(this.value)" onfocus="openChannelDropdown()" readonly>
+                <div class="channel-dropdown" id="channel-dropdown"></div>
+              </div>
+              <input type="hidden" id="say-channel">
             </div>
 
             <!-- MENTIONS -->
@@ -563,12 +579,55 @@ function insertMention(mention) {
   updatePreview();
 }
 
+let allChannels = [];
+let selectedChannelId = null;
+
 async function loadChannels() {
   const channels = await api('GET', '/api/channels');
-  const sel = document.getElementById('say-channel');
-  if (channels && channels.length > 0) sel.innerHTML = channels.map(c => `<option value="${c.id}">#${c.name}</option>`).join('');
-  else sel.innerHTML = '<option value="">⚠️ Impossible de charger les salons</option>';
+  if (channels && channels.length > 0) {
+    allChannels = channels;
+    renderChannelDropdown(channels);
+  } else {
+    document.getElementById('channel-search').placeholder = '⚠️ Impossible de charger les salons';
+  }
 }
+
+function renderChannelDropdown(channels) {
+  const dropdown = document.getElementById('channel-dropdown');
+  dropdown.innerHTML = channels.map(c =>
+    `<div class="channel-option" onclick="selectChannel('${c.id}', '#${c.name}')">#${c.name}</div>`
+  ).join('');
+}
+
+function filterChannels(query) {
+  const filtered = allChannels.filter(c => c.name.toLowerCase().includes(query.toLowerCase()));
+  renderChannelDropdown(filtered);
+  openChannelDropdown();
+  selectedChannelId = null;
+  document.getElementById('say-channel').value = '';
+}
+
+function openChannelDropdown() {
+  const dropdown = document.getElementById('channel-dropdown');
+  dropdown.classList.add('open');
+  const input = document.getElementById('channel-search');
+  input.removeAttribute('readonly');
+}
+
+function selectChannel(id, name) {
+  selectedChannelId = id;
+  document.getElementById('say-channel').value = id;
+  document.getElementById('channel-search').value = name;
+  document.getElementById('channel-dropdown').classList.remove('open');
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('channel-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('channel-dropdown').classList.remove('open');
+  }
+});
 
 async function loadRoles() {
   const roles = await api('GET', '/api/roles');
