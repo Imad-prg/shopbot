@@ -1,0 +1,370 @@
+// ================================
+// 🤖 LKWAN STORE BOT
+// ================================
+
+const {
+    Client,
+    GatewayIntentBits,
+    EmbedBuilder,
+    REST,
+    Routes,
+    SlashCommandBuilder,
+    PermissionsBitField,
+    AttachmentBuilder
+} = require("discord.js");
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+require("dotenv").config();
+
+// ================================
+// 📦 DATA STORE (JSON file)
+// ================================
+const DATA_FILE = path.join(__dirname, "data.json");
+
+function loadData() {
+    if (!fs.existsSync(DATA_FILE)) {
+        const defaultData = {
+            products: [],
+            promos: [],
+            welcome: {
+                enabled: true,
+                message: "Bienvenue sur LKWAN STORE ! 🎮",
+                channelId: process.env.WELCOME_CHANNEL_ID || ""
+            }
+        };
+        fs.writeFileSync(DATA_FILE, JSON.stringify(defaultData, null, 2));
+    }
+    return JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+}
+
+function saveData(data) {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+}
+
+// ================================
+// 🤖 DISCORD CLIENT
+// ================================
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.DirectMessages
+    ],
+    partials: ["CHANNEL"]
+});
+
+// ================================
+// 📋 SLASH COMMANDS
+// ================================
+const commands = [
+    new SlashCommandBuilder()
+        .setName("stock")
+        .setDescription("Affiche le stock disponible"),
+
+    new SlashCommandBuilder()
+        .setName("prix")
+        .setDescription("Affiche la liste des prix"),
+
+    new SlashCommandBuilder()
+        .setName("promo")
+        .setDescription("Affiche les promotions en cours"),
+
+    new SlashCommandBuilder()
+        .setName("welcome")
+        .setDescription("Envoie le message de bienvenue manuellement")
+        .addUserOption(opt => opt.setName("membre").setDescription("Le membre à accueillir").setRequired(false)),
+
+    new SlashCommandBuilder()
+        .setName("say")
+        .setDescription("Faire parler le bot dans un salon")
+        .addChannelOption(opt => opt.setName("salon").setDescription("Salon cible").setRequired(true))
+        .addStringOption(opt => opt.setName("message").setDescription("Message à envoyer").setRequired(true))
+        .addAttachmentOption(opt => opt.setName("image").setDescription("Image à joindre").setRequired(false)),
+
+    new SlashCommandBuilder()
+        .setName("sayhere")
+        .setDescription("Faire parler le bot dans ce salon")
+        .addStringOption(opt => opt.setName("message").setDescription("Message à envoyer").setRequired(true))
+        .addAttachmentOption(opt => opt.setName("image").setDescription("Image à joindre").setRequired(false)),
+].map(cmd => cmd.toJSON());
+
+// ================================
+// 🔁 REGISTER SLASH COMMANDS
+// ================================
+async function registerCommands() {
+    const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
+    try {
+        console.log("📋 Enregistrement des slash commands...");
+        await rest.put(
+            Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+            { body: commands }
+        );
+        console.log("✅ Slash commands enregistrées !");
+    } catch (err) {
+        console.error("❌ Erreur enregistrement:", err);
+    }
+}
+
+// ================================
+// 🎨 EMBED HELPERS
+// ================================
+const BLUE = 0x0066FF;
+const LOGO = "https://i.imgur.com/placeholder.png"; // Remplace avec ton logo URL
+
+function makeEmbed(title, description, fields = []) {
+    const embed = new EmbedBuilder()
+        .setColor(BLUE)
+        .setTitle(title)
+        .setDescription(description)
+        .setTimestamp()
+        .setFooter({ text: "LKWAN STORE 🎮" });
+
+    if (fields.length > 0) embed.addFields(fields);
+    return embed;
+}
+
+// ================================
+// 🟢 BOT READY
+// ================================
+client.once("ready", async () => {
+    console.log(`✅ Connecté en tant que ${client.user.tag}`);
+    client.user.setPresence({
+        activities: [{ name: "LKWAN STORE 🎮", type: 3 }],
+        status: "online"
+    });
+    await registerCommands();
+});
+
+// ================================
+// 👋 AUTO WELCOME
+// ================================
+client.on("guildMemberAdd", async (member) => {
+    if (member.guild.id !== process.env.GUILD_ID) return;
+    if (member.user.bot) return;
+
+    const data = loadData();
+    if (!data.welcome.enabled) return;
+
+    const channel = member.guild.channels.cache.get(data.welcome.channelId || process.env.WELCOME_CHANNEL_ID);
+    if (!channel) return;
+
+    const embed = makeEmbed(
+        `👋 Bienvenue sur LKWAN STORE !`,
+        data.welcome.message.replace("{user}", `<@${member.id}>`),
+        [
+            { name: "🛒 Nos produits", value: "Tape `/stock` pour voir nos produits", inline: true },
+            { name: "💰 Nos prix", value: "Tape `/prix` pour voir les tarifs", inline: true },
+        ]
+    );
+
+    channel.send({ embeds: [embed] });
+});
+
+// ================================
+// ⚡ SLASH COMMANDS HANDLER
+// ================================
+client.on("interactionCreate", async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+
+    const { commandName } = interaction;
+    const isAdmin = interaction.member.permissions.has(PermissionsBitField.Flags.Administrator);
+    const data = loadData();
+
+    // /stock
+    if (commandName === "stock") {
+        const products = data.products.filter(p => p.stock > 0);
+
+        if (products.length === 0) {
+            return interaction.reply({
+                embeds: [makeEmbed("📦 Stock", "❌ Aucun produit en stock pour le moment.")],
+                ephemeral: false
+            });
+        }
+
+        const fields = products.map(p => ({
+            name: `${p.emoji || "🎮"} ${p.name}`,
+            value: `Stock: **${p.stock}** unités\nPrix: **${p.price}€**`,
+            inline: true
+        }));
+
+        return interaction.reply({
+            embeds: [makeEmbed("📦 Stock disponible", "Voici nos produits disponibles :", fields)]
+        });
+    }
+
+    // /prix
+    if (commandName === "prix") {
+        const products = data.products;
+
+        if (products.length === 0) {
+            return interaction.reply({
+                embeds: [makeEmbed("💰 Prix", "❌ Aucun produit configuré pour le moment.")]
+            });
+        }
+
+        const fields = products.map(p => ({
+            name: `${p.emoji || "🎮"} ${p.name}`,
+            value: `**${p.price}€**${p.description ? `\n${p.description}` : ""}`,
+            inline: true
+        }));
+
+        return interaction.reply({
+            embeds: [makeEmbed("💰 Liste des prix", "Tous nos tarifs :", fields)]
+        });
+    }
+
+    // /promo
+    if (commandName === "promo") {
+        const promos = data.promos.filter(p => p.active);
+
+        if (promos.length === 0) {
+            return interaction.reply({
+                embeds: [makeEmbed("🎁 Promotions", "❌ Aucune promotion en cours pour le moment.")]
+            });
+        }
+
+        const fields = promos.map(p => ({
+            name: `🎁 ${p.title}`,
+            value: p.description,
+            inline: false
+        }));
+
+        return interaction.reply({
+            embeds: [makeEmbed("🎁 Promotions en cours", "Profite de nos offres !", fields)]
+        });
+    }
+
+    // /welcome
+    if (commandName === "welcome") {
+        if (!isAdmin) return interaction.reply({ content: "❌ Tu n'as pas la permission.", ephemeral: true });
+
+        const target = interaction.options.getUser("membre") || interaction.user;
+        const channel = interaction.guild.channels.cache.get(data.welcome.channelId || process.env.WELCOME_CHANNEL_ID);
+
+        if (!channel) return interaction.reply({ content: "❌ Salon welcome non configuré.", ephemeral: true });
+
+        const embed = makeEmbed(
+            `👋 Bienvenue sur LKWAN STORE !`,
+            data.welcome.message.replace("{user}", `<@${target.id}>`),
+            [
+                { name: "🛒 Nos produits", value: "Tape `/stock` pour voir nos produits", inline: true },
+                { name: "💰 Nos prix", value: "Tape `/prix` pour voir les tarifs", inline: true },
+            ]
+        );
+
+        await channel.send({ embeds: [embed] });
+        return interaction.reply({ content: "✅ Message de bienvenue envoyé !", ephemeral: true });
+    }
+
+    // /say
+    if (commandName === "say") {
+        if (!isAdmin) return interaction.reply({ content: "❌ Tu n'as pas la permission.", ephemeral: true });
+
+        const channel = interaction.options.getChannel("salon");
+        const message = interaction.options.getString("message");
+        const image = interaction.options.getAttachment("image");
+
+        const payload = { content: message };
+        if (image) payload.files = [image.url];
+
+        await channel.send(payload);
+        return interaction.reply({ content: `✅ Message envoyé dans <#${channel.id}>`, ephemeral: true });
+    }
+
+    // /sayhere
+    if (commandName === "sayhere") {
+        if (!isAdmin) return interaction.reply({ content: "❌ Tu n'as pas la permission.", ephemeral: true });
+
+        const message = interaction.options.getString("message");
+        const image = interaction.options.getAttachment("image");
+
+        const payload = { content: message };
+        if (image) payload.files = [image.url];
+
+        await interaction.channel.send(payload);
+        return interaction.reply({ content: "✅ Message envoyé !", ephemeral: true });
+    }
+});
+
+// ================================
+// 🌐 EXPRESS API (pour le dashboard)
+// ================================
+const app = express();
+app.use(express.json());
+app.use(require("cors")());
+
+const API_KEY = process.env.API_KEY || "lkwan-secret-key";
+
+function auth(req, res, next) {
+    const key = req.headers["x-api-key"];
+    if (key !== API_KEY) return res.status(401).json({ error: "Non autorisé" });
+    next();
+}
+
+// GET data
+app.get("/api/data", auth, (req, res) => {
+    res.json(loadData());
+});
+
+// POST products
+app.post("/api/products", auth, (req, res) => {
+    const data = loadData();
+    data.products = req.body;
+    saveData(data);
+    res.json({ success: true });
+});
+
+// POST promos
+app.post("/api/promos", auth, (req, res) => {
+    const data = loadData();
+    data.promos = req.body;
+    saveData(data);
+    res.json({ success: true });
+});
+
+// POST welcome
+app.post("/api/welcome", auth, (req, res) => {
+    const data = loadData();
+    data.welcome = { ...data.welcome, ...req.body };
+    saveData(data);
+    res.json({ success: true });
+});
+
+// POST say — poster un message dans un salon via dashboard
+app.post("/api/say", auth, async (req, res) => {
+    const { channelId, message, imageUrl } = req.body;
+    try {
+        const channel = await client.channels.fetch(channelId);
+        const payload = { content: message };
+        if (imageUrl) payload.files = [imageUrl];
+        await channel.send(payload);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET channels list
+app.get("/api/channels", auth, async (req, res) => {
+    try {
+        const guild = await client.guilds.fetch(process.env.GUILD_ID);
+        await guild.channels.fetch();
+        const channels = guild.channels.cache
+            .filter(c => c.type === 0)
+            .map(c => ({ id: c.id, name: c.name }));
+        res.json(channels);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🌐 API running on port ${PORT}`));
+
+// ================================
+// 🚀 LOGIN
+// ================================
+client.login(process.env.TOKEN);

@@ -1,0 +1,17 @@
+{
+  "name": "lkwan-store-bot",
+  "version": "1.0.0",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "discord.js": "^14.22.1",
+    "dotenv": "^17.2.2",
+    "express": "^4.18.2"
+  }
+}
