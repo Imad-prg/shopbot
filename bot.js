@@ -167,7 +167,7 @@ client.on("guildMemberAdd", async (member) => {
             if (w.embedDesc) embed.setDescription(w.embedDesc.replace('{user}', userMention));
             if (w.embedFooter) embed.setFooter({ text: w.embedFooter });
 
-            const payload = { content: userMention, embeds: [embed] };
+            const payload = { content: null, embeds: [embed] };
 
             if (w.embedImageUrl) {
                 if (w.embedImageUrl.startsWith('data:')) {
