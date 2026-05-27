@@ -10,7 +10,11 @@ const {
     Routes,
     SlashCommandBuilder,
     PermissionsBitField,
-    AttachmentBuilder
+    AttachmentBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ChannelType
 } = require("discord.js");
 const express = require("express");
 const fs = require("fs");
@@ -410,12 +414,11 @@ app.post("/api/say", auth, async (req, res) => {
         // Build ticket button if requested
         let components = [];
         if (ticketButton) {
-            const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
+                    .setCustomId("create_ticket")
                     .setLabel(ticketButtonLabel || "🎫 Open a Ticket")
-                    .setStyle(ButtonStyle.Link)
-                    .setURL(`https://discord.com/channels/${process.env.GUILD_ID}/${process.env.TICKET_CHANNEL_ID || channelId}`)
+                    .setStyle(ButtonStyle.Primary)
             );
             components = [row];
         }
@@ -494,6 +497,113 @@ app.get("/api/channels", auth, async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🌐 API running on port ${PORT}`));
+
+// ================================
+// 🎫 TICKET BUTTON HANDLER
+// ================================
+client.on("interactionCreate", async (interaction) => {
+    if (!interaction.isButton()) return;
+    if (interaction.customId !== "create_ticket") return;
+
+    const guild = interaction.guild;
+    const user = interaction.user;
+
+    // Check existing ticket
+    const existing = guild.channels.cache.find(c =>
+        c.name === `ticket-${user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}` &&
+        c.parentId === process.env.TICKET_CATEGORY_ID
+    );
+
+    if (existing) {
+        return interaction.reply({
+            content: `❌ You already have an open ticket: <#${existing.id}>`,
+            ephemeral: true
+        });
+    }
+
+    // Create ticket channel
+    try {
+        const ticketChannel = await guild.channels.create({
+            name: `ticket-${user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+            type: ChannelType.GuildText,
+            parent: process.env.TICKET_CATEGORY_ID,
+            permissionOverwrites: [
+                {
+                    id: guild.roles.everyone,
+                    deny: [PermissionsBitField.Flags.ViewChannel]
+                },
+                {
+                    id: user.id,
+                    allow: [
+                        PermissionsBitField.Flags.ViewChannel,
+                        PermissionsBitField.Flags.SendMessages,
+                        PermissionsBitField.Flags.ReadMessageHistory
+                    ]
+                },
+                {
+                    id: process.env.STAFF_ROLE_ID,
+                    allow: [
+                        PermissionsBitField.Flags.ViewChannel,
+                        PermissionsBitField.Flags.SendMessages,
+                        PermissionsBitField.Flags.ReadMessageHistory,
+                        PermissionsBitField.Flags.ManageChannels
+                    ]
+                }
+            ]
+        });
+
+        const closeRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId("close_ticket_store")
+                .setLabel("Close Ticket")
+                .setStyle(ButtonStyle.Danger)
+                .setEmoji("🔒")
+        );
+
+        const embed = new EmbedBuilder()
+            .setColor(0x0066FF)
+            .setTitle("🎫 LKWAN STORE — Support Ticket")
+            .setDescription(`Hello <@${user.id}> ! 👋\n\nThank you for contacting **LKWAN STORE**.\nA staff member will assist you shortly.\n\nPlease describe your request.`)
+            .setFooter({ text: "LKWAN STORE 🎮" })
+            .setTimestamp();
+
+        await ticketChannel.send({
+            content: `<@${user.id}> | <@&${process.env.STAFF_ROLE_ID}>`,
+            embeds: [embed],
+            components: [closeRow]
+        });
+
+        await interaction.reply({
+            content: `✅ Your ticket has been created: <#${ticketChannel.id}>`,
+            ephemeral: true
+        });
+
+    } catch (err) {
+        console.error("Ticket error:", err);
+        await interaction.reply({
+            content: "❌ Error creating ticket. Please try again.",
+            ephemeral: true
+        });
+    }
+});
+
+// Close ticket button handler
+client.on("interactionCreate", async (interaction) => {
+    if (!interaction.isButton()) return;
+    if (interaction.customId !== "close_ticket_store") return;
+
+    const isStaff = interaction.member.roles.cache.has(process.env.STAFF_ROLE_ID);
+    const isOwner = interaction.channel.permissionOverwrites.cache.some(
+        p => p.id === interaction.user.id && p.allow.has(PermissionsBitField.Flags.ViewChannel)
+    );
+
+    if (!isStaff && !isOwner) {
+        return interaction.reply({ content: "❌ You don't have permission.", ephemeral: true });
+    }
+
+    await interaction.reply({ content: "🔒 Closing ticket in 5 seconds..." });
+    setTimeout(() => interaction.channel.delete().catch(() => {}), 5000);
+});
 
 // ================================
 // 🚀 LOGIN
