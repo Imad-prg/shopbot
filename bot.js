@@ -402,10 +402,23 @@ app.post("/api/welcome", auth, (req, res) => {
 
 // POST say
 app.post("/api/say", auth, async (req, res) => {
-    const { channelId, message, imageUrl, type, embed, mentionStr } = req.body;
+    const { channelId, message, imageUrl, type, embed, mentionStr, ticketButton, ticketButtonLabel } = req.body;
     try {
         const channel = await client.channels.fetch(channelId);
         const mention = mentionStr ? mentionStr + '\n' : '';
+
+        // Build ticket button if requested
+        let components = [];
+        if (ticketButton) {
+            const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setLabel(ticketButtonLabel || "🎫 Open a Ticket")
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(`https://discord.com/channels/${process.env.GUILD_ID}/${process.env.TICKET_CHANNEL_ID || channelId}`)
+            );
+            components = [row];
+        }
 
         if (type === 'embed' && embed) {
             const colorInt = parseInt((embed.color || '#0066ff').replace('#', ''), 16);
@@ -414,9 +427,8 @@ app.post("/api/say", auth, async (req, res) => {
             if (embed.description) discordEmbed.setDescription(embed.description);
             if (embed.footer) discordEmbed.setFooter({ text: embed.footer });
 
-            const payload = { content: mention || null, embeds: [discordEmbed] };
+            const payload = { content: mention || null, embeds: [discordEmbed], components };
 
-            // Handle embed image
             if (embed.imageUrl) {
                 if (embed.imageUrl.startsWith('data:')) {
                     const attachment = base64ToAttachment(embed.imageUrl, "embed-image.png");
@@ -431,9 +443,8 @@ app.post("/api/say", auth, async (req, res) => {
 
             await channel.send(payload);
         } else {
-            const payload = { content: mention + (message || '') };
+            const payload = { content: mention + (message || ''), components };
 
-            // Handle normal image
             if (imageUrl) {
                 if (imageUrl.startsWith('data:')) {
                     const attachment = base64ToAttachment(imageUrl, "image.png");
