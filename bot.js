@@ -524,24 +524,24 @@ client.on("interactionCreate", async (interaction) => {
     const guild = interaction.guild;
     const user = interaction.user;
 
-    // Check if user already has an open ticket thread
-    const existing = guild.channels.cache.find(c =>
-        c.isThread() &&
-        c.name.startsWith("ticket-") &&
-        !c.archived &&
-        c.ownerId === interaction.message.id
-    );
+    await interaction.deferReply({ ephemeral: true });
 
     try {
         const ticketNum = String(incrementTicketCount()).padStart(4, '0');
 
-        const thread = await interaction.message.startThread({
+        // Send a new message in the channel, then create thread from it
+        const ticketMsg = await interaction.channel.send({
+            content: `🎫 **Ticket #${ticketNum}** — <@${user.id}>`
+        });
+
+        const thread = await ticketMsg.startThread({
             name: `ticket-${ticketNum} • ${user.username}`,
             autoArchiveDuration: 10080,
             reason: `Ticket created by ${user.username}`
         });
 
-        // Add staff members to thread
+        // Add user and staff to thread
+        await thread.members.add(user.id).catch(() => {});
         const staffMembers = guild.members.cache.filter(m =>
             m.roles.cache.has(process.env.STAFF_ROLE_ID) && !m.user.bot
         );
@@ -570,16 +570,14 @@ client.on("interactionCreate", async (interaction) => {
             components: [closeRow]
         });
 
-        await interaction.reply({
-            content: `✅ Your ticket has been created: <#${thread.id}>`,
-            ephemeral: true
+        await interaction.editReply({
+            content: `✅ Your ticket has been created: <#${thread.id}>`
         });
 
     } catch (err) {
         console.error("Ticket error:", err);
-        await interaction.reply({
-            content: "❌ Error creating ticket. Please try again.",
-            ephemeral: true
+        await interaction.editReply({
+            content: "❌ Error creating ticket. Please try again."
         });
     }
 });
@@ -590,9 +588,10 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.customId !== "close_ticket_store") return;
 
     const isStaff = interaction.member.roles.cache.has(process.env.STAFF_ROLE_ID);
+    const isAdmin = interaction.member.permissions.has(PermissionsBitField.Flags.Administrator);
     const channel = interaction.channel;
 
-    if (!isStaff && channel.ownerId !== interaction.user.id) {
+    if (!isStaff && !isAdmin && channel.ownerId !== interaction.user.id) {
         return interaction.reply({ content: "❌ You don't have permission.", ephemeral: true });
     }
 
