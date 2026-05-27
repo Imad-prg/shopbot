@@ -540,6 +540,9 @@ client.on("interactionCreate", async (interaction) => {
             reason: `Ticket created by ${user.username}`
         });
 
+        // Delete the base message to keep channel clean
+        await ticketMsg.delete().catch(() => {});
+
         // Add user and staff to thread
         await thread.members.add(user.id).catch(() => {});
         const staffMembers = guild.members.cache.filter(m =>
@@ -582,7 +585,7 @@ client.on("interactionCreate", async (interaction) => {
     }
 });
 
-// Close ticket — archive thread without deleting
+// Close ticket — ask confirmation
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isButton()) return;
     if (interaction.customId !== "close_ticket_store") return;
@@ -595,11 +598,46 @@ client.on("interactionCreate", async (interaction) => {
         return interaction.reply({ content: "❌ You don't have permission.", ephemeral: true });
     }
 
-    await interaction.reply({ content: "🔒 Ticket closed." });
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId("archive_ticket")
+            .setLabel("📁 Archive")
+            .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId("delete_ticket")
+            .setLabel("🗑️ Delete")
+            .setStyle(ButtonStyle.Danger)
+    );
 
-    if (channel.isThread()) {
-        await channel.setArchived(true).catch(() => {});
+    await interaction.reply({
+        content: `**Close this ticket?**\n📁 **Archive** — keep messages\n🗑️ **Delete** — admin only`,
+        components: [row],
+        ephemeral: true
+    });
+});
+
+// Archive ticket
+client.on("interactionCreate", async (interaction) => {
+    if (!interaction.isButton()) return;
+    if (interaction.customId !== "archive_ticket") return;
+
+    const channel = interaction.channel;
+    await interaction.reply({ content: "📁 Ticket archived.", ephemeral: true });
+    if (channel.isThread()) await channel.setArchived(true).catch(() => {});
+});
+
+// Delete ticket — admin only
+client.on("interactionCreate", async (interaction) => {
+    if (!interaction.isButton()) return;
+    if (interaction.customId !== "delete_ticket") return;
+
+    const isAdmin = interaction.member.permissions.has(PermissionsBitField.Flags.Administrator);
+    if (!isAdmin) {
+        return interaction.reply({ content: "❌ Only admins can delete tickets.", ephemeral: true });
     }
+
+    await interaction.reply({ content: "🗑️ Deleting ticket in 3 seconds...", ephemeral: true });
+    setTimeout(() => interaction.channel.delete().catch(() => {}), 3000);
 });
 
 // ================================
