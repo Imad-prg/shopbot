@@ -499,6 +499,22 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🌐 API running on port ${PORT}`));
 
 // ================================
+// 🎫 TICKET COUNTER
+// ================================
+const TICKET_FILE = path.join(__dirname, "tickets.json");
+
+function getTicketCount() {
+    if (!fs.existsSync(TICKET_FILE)) fs.writeFileSync(TICKET_FILE, JSON.stringify({ count: 0 }));
+    return JSON.parse(fs.readFileSync(TICKET_FILE, "utf8")).count;
+}
+
+function incrementTicketCount() {
+    const count = getTicketCount() + 1;
+    fs.writeFileSync(TICKET_FILE, JSON.stringify({ count }));
+    return count;
+}
+
+// ================================
 // 🎫 TICKET BUTTON HANDLER
 // ================================
 client.on("interactionCreate", async (interaction) => {
@@ -508,49 +524,30 @@ client.on("interactionCreate", async (interaction) => {
     const guild = interaction.guild;
     const user = interaction.user;
 
-    // Check existing ticket
+    // Check if user already has an open ticket thread
     const existing = guild.channels.cache.find(c =>
-        c.name === `ticket-${user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}` &&
-        c.parentId === process.env.TICKET_CATEGORY_ID
+        c.isThread() &&
+        c.name.startsWith("ticket-") &&
+        !c.archived &&
+        c.ownerId === interaction.message.id
     );
 
-    if (existing) {
-        return interaction.reply({
-            content: `❌ You already have an open ticket: <#${existing.id}>`,
-            ephemeral: true
-        });
-    }
-
-    // Create ticket channel
     try {
-        const ticketChannel = await guild.channels.create({
-            name: `ticket-${user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
-            type: ChannelType.GuildText,
-            parent: process.env.TICKET_CATEGORY_ID,
-            permissionOverwrites: [
-                {
-                    id: guild.roles.everyone,
-                    deny: [PermissionsBitField.Flags.ViewChannel]
-                },
-                {
-                    id: user.id,
-                    allow: [
-                        PermissionsBitField.Flags.ViewChannel,
-                        PermissionsBitField.Flags.SendMessages,
-                        PermissionsBitField.Flags.ReadMessageHistory
-                    ]
-                },
-                {
-                    id: process.env.STAFF_ROLE_ID,
-                    allow: [
-                        PermissionsBitField.Flags.ViewChannel,
-                        PermissionsBitField.Flags.SendMessages,
-                        PermissionsBitField.Flags.ReadMessageHistory,
-                        PermissionsBitField.Flags.ManageChannels
-                    ]
-                }
-            ]
+        const ticketNum = String(incrementTicketCount()).padStart(4, '0');
+
+        const thread = await interaction.message.startThread({
+            name: `ticket-${ticketNum} • ${user.username}`,
+            autoArchiveDuration: 10080,
+            reason: `Ticket created by ${user.username}`
         });
+
+        // Add staff members to thread
+        const staffMembers = guild.members.cache.filter(m =>
+            m.roles.cache.has(process.env.STAFF_ROLE_ID) && !m.user.bot
+        );
+        for (const [, member] of staffMembers) {
+            await thread.members.add(member.id).catch(() => {});
+        }
 
         const closeRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
@@ -562,19 +559,19 @@ client.on("interactionCreate", async (interaction) => {
 
         const embed = new EmbedBuilder()
             .setColor(0x0066FF)
-            .setTitle("🎫 LKWAN STORE — Support Ticket")
+            .setTitle(`🎫 Ticket #${ticketNum} — LKWAN STORE`)
             .setDescription(`Hello <@${user.id}> ! 👋\n\nThank you for contacting **LKWAN STORE**.\nA staff member will assist you shortly.\n\nPlease describe your request.`)
             .setFooter({ text: "LKWAN STORE 🎮" })
             .setTimestamp();
 
-        await ticketChannel.send({
+        await thread.send({
             content: `<@${user.id}> | <@&${process.env.STAFF_ROLE_ID}>`,
             embeds: [embed],
             components: [closeRow]
         });
 
         await interaction.reply({
-            content: `✅ Your ticket has been created: <#${ticketChannel.id}>`,
+            content: `✅ Your ticket has been created: <#${thread.id}>`,
             ephemeral: true
         });
 
@@ -587,22 +584,23 @@ client.on("interactionCreate", async (interaction) => {
     }
 });
 
-// Close ticket button handler
+// Close ticket — archive thread without deleting
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isButton()) return;
     if (interaction.customId !== "close_ticket_store") return;
 
     const isStaff = interaction.member.roles.cache.has(process.env.STAFF_ROLE_ID);
-    const isOwner = interaction.channel.permissionOverwrites.cache.some(
-        p => p.id === interaction.user.id && p.allow.has(PermissionsBitField.Flags.ViewChannel)
-    );
+    const channel = interaction.channel;
 
-    if (!isStaff && !isOwner) {
+    if (!isStaff && channel.ownerId !== interaction.user.id) {
         return interaction.reply({ content: "❌ You don't have permission.", ephemeral: true });
     }
 
-    await interaction.reply({ content: "🔒 Closing ticket in 5 seconds..." });
-    setTimeout(() => interaction.channel.delete().catch(() => {}), 5000);
+    await interaction.reply({ content: "🔒 Ticket closed." });
+
+    if (channel.isThread()) {
+        await channel.setArchived(true).catch(() => {});
+    }
 });
 
 // ================================
