@@ -341,6 +341,18 @@
               </div>
             </div>
 
+            <!-- TICKET BUTTON -->
+            <div class="form-group" style="background:rgba(0,102,255,0.05);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:8px">
+              <div class="toggle-wrap" style="margin-bottom:10px">
+                <div class="toggle" id="ticket-btn-toggle" onclick="toggleTicketBtn()"></div>
+                <span style="font-weight:600;font-size:13px">🎫 Ajouter bouton "Ouvrir un ticket"</span>
+              </div>
+              <div id="ticket-btn-options" style="display:none">
+                <label>Texte du bouton</label>
+                <input type="text" id="ticket-btn-label" placeholder="🎫 Open a Ticket" value="🎫 Open a Ticket">
+              </div>
+            </div>
+
             <div style="display:flex;gap:10px;margin-top:8px">
               <button class="btn btn-blue" onclick="sendSayMessage()" style="flex:1">📢 Envoyer</button>
               <button class="btn btn-danger" onclick="clearSay()">✕ Vider</button>
@@ -786,13 +798,24 @@ function clearSay() {
   updatePreview();
 }
 
+let ticketBtnEnabled = false;
+
+function toggleTicketBtn() {
+  ticketBtnEnabled = !ticketBtnEnabled;
+  const toggle = document.getElementById('ticket-btn-toggle');
+  toggle.classList.toggle('on', ticketBtnEnabled);
+  document.getElementById('ticket-btn-options').style.display = ticketBtnEnabled ? 'block' : 'none';
+}
+
 async function sendSayMessage() {
   const channelId = document.getElementById('say-channel').value;
   if (!channelId) { toast('Sélectionne un salon', 'error'); return; }
 
   const mentionStr = selectedMentions.join(' ');
+  const ticketButton = ticketBtnEnabled;
+  const ticketButtonLabel = document.getElementById('ticket-btn-label')?.value || '🎫 Open a Ticket';
 
-  let payload = { channelId, mentionStr };
+  let payload = { channelId, mentionStr, ticketButton, ticketButtonLabel };
 
   if (currentMsgType === 'normal') {
     const message = document.getElementById('say-message').value.trim();
