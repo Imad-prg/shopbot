@@ -19,7 +19,12 @@ const {
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const OpenAI = require("openai");
 require("dotenv").config();
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const claimedTickets = new Set();
+const ticketHistory = new Map();
 
 // ================================
 // 📦 DATA STORE (JSON file)
@@ -552,6 +557,11 @@ client.on("interactionCreate", async (interaction) => {
             await thread.members.add(member.id).catch(() => {});
         }
 
+        // Add LKWAN SUPPORT bot to thread
+        if (process.env.SUPPORT_BOT_ID) {
+            await thread.members.add(process.env.SUPPORT_BOT_ID).catch(() => {});
+        }
+
         const closeRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId("close_ticket_store")
@@ -638,6 +648,70 @@ client.on("interactionCreate", async (interaction) => {
 
     await interaction.reply({ content: "🗑️ Deleting ticket in 3 seconds...", ephemeral: true });
     setTimeout(() => interaction.channel.delete().catch(() => {}), 3000);
+});
+
+// ================================
+// 🤖 AI RESPONSE FUNCTION
+// ================================
+async function getAIResponse(ticketId, userMessage, username) {
+    if (!ticketHistory.has(ticketId)) ticketHistory.set(ticketId, []);
+    const history = ticketHistory.get(ticketId);
+    history.push({ role: "user", content: `${username}: ${userMessage}` });
+    if (history.length > 10) history.splice(0, history.length - 10);
+
+    const messages = [
+        {
+            role: "system",
+            content: `You are a professional support agent for LKWAN STORE, a digital products shop selling PSN cards, VP (Valorant Points), Netflix, Xbox, Steam, and more.
+- Detect the customer's language and ALWAYS respond in the same language
+- Be friendly, professional and helpful
+- Answer questions about products, prices, and orders
+- If you don't know exact details, say staff will confirm soon
+- Keep responses short and clear (max 3-4 lines)
+- Sign off as "LKWAN Support 🎮"`
+        },
+        ...history
+    ];
+
+    const response = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages,
+        max_tokens: 300,
+        temperature: 0.7
+    });
+
+    const reply = response.choices[0].message.content;
+    history.push({ role: "assistant", content: reply });
+    return reply;
+}
+
+// ================================
+// 💬 AI MESSAGE HANDLER FOR TICKETS
+// ================================
+client.on("messageCreate", async (message) => {
+    if (message.author.bot) return;
+    const channel = message.channel;
+    if (!channel.isThread()) return;
+    if (!channel.name.startsWith("ticket-")) return;
+    if (claimedTickets.has(channel.id)) return;
+
+    const isStaff = message.member?.roles.cache.has(process.env.STAFF_ROLE_ID);
+    if (isStaff) return;
+
+    await channel.sendTyping();
+
+    try {
+        const reply = await getAIResponse(channel.id, message.content, message.author.username);
+        await channel.send({
+            embeds: [new EmbedBuilder()
+                .setColor(0x0066FF)
+                .setDescription(reply)
+                .setFooter({ text: "LKWAN Support 🤖 • Staff will assist you soon" })
+            ]
+        });
+    } catch (err) {
+        console.error("AI Error:", err);
+    }
 });
 
 // ================================
