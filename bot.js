@@ -608,11 +608,6 @@ client.on("interactionCreate", async (interaction) => {
                 .setEmoji("🇲🇦")
         );
 
-        await thread.send({
-            content: `<@${user.id}> — **Please select your language / Veuillez choisir votre langue** 🌍`,
-            components: [langRow1]
-        });
-
         await interaction.editReply({
             content: `✅ Your ticket has been created: <#${thread.id}>`
         });
@@ -623,30 +618,6 @@ client.on("interactionCreate", async (interaction) => {
             content: "❌ Error creating ticket. Please try again."
         });
     }
-});
-
-// ================================
-// 🌍 LANGUAGE SELECTION HANDLER
-// ================================
-const langMessages = {
-    lang_fr: "🇫🇷 **Français sélectionné !** Notre assistant va vous répondre en français.",
-    lang_en: "🇺🇸 **English selected!** Our assistant will reply in English.",
-    lang_de: "🇩🇪 **Deutsch ausgewählt!** Unser Assistent antwortet auf Deutsch.",
-    lang_ar: "🇸🇦 **تم اختيار العربية!** سيرد مساعدنا باللغة العربية.",
-    lang_ber: "🇲🇦 **Tamazight tettwaferned!** Anelmad-nneɣ ara k-yemleɣ s Tmazight."
-};
-
-client.on("interactionCreate", async (interaction) => {
-    if (!interaction.isButton()) return;
-    if (!interaction.customId.startsWith("lang_")) return;
-
-    const lang = interaction.customId;
-    const msg = langMessages[lang] || "Language selected!";
-
-    await interaction.update({ 
-        content: `<@${interaction.user.id}> — ${msg}`, 
-        components: [] 
-    });
 });
 
 // Close ticket — ask confirmation
