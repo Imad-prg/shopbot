@@ -19,12 +19,7 @@ const {
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const OpenAI = require("openai");
 require("dotenv").config();
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const claimedTickets = new Set();
-const ticketHistory = new Map();
 
 // ================================
 // 📦 DATA STORE (JSON file)
@@ -542,6 +537,7 @@ client.on("interactionCreate", async (interaction) => {
         const thread = await ticketMsg.startThread({
             name: `ticket-${ticketNum} • ${user.username}`,
             autoArchiveDuration: 10080,
+            type: ChannelType.PrivateThread,
             reason: `Ticket created by ${user.username}`
         });
 
@@ -583,6 +579,40 @@ client.on("interactionCreate", async (interaction) => {
             components: [closeRow]
         });
 
+        // Language selection message
+        const langRow1 = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId("lang_fr")
+                .setLabel("Français")
+                .setStyle(ButtonStyle.Primary)
+                .setEmoji("🇫🇷"),
+            new ButtonBuilder()
+                .setCustomId("lang_en")
+                .setLabel("English")
+                .setStyle(ButtonStyle.Danger)
+                .setEmoji("🇺🇸"),
+            new ButtonBuilder()
+                .setCustomId("lang_de")
+                .setLabel("Deutsch")
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji("🇩🇪"),
+            new ButtonBuilder()
+                .setCustomId("lang_ar")
+                .setLabel("العربية")
+                .setStyle(ButtonStyle.Success)
+                .setEmoji("🇸🇦"),
+            new ButtonBuilder()
+                .setCustomId("lang_ber")
+                .setLabel("ⵜⴰⵎⴰⵣⵉⵖⵜ")
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji("🇲🇦")
+        );
+
+        await thread.send({
+            content: `<@${user.id}> — **Please select your language / Veuillez choisir votre langue** 🌍`,
+            components: [langRow1]
+        });
+
         await interaction.editReply({
             content: `✅ Your ticket has been created: <#${thread.id}>`
         });
@@ -593,6 +623,30 @@ client.on("interactionCreate", async (interaction) => {
             content: "❌ Error creating ticket. Please try again."
         });
     }
+});
+
+// ================================
+// 🌍 LANGUAGE SELECTION HANDLER
+// ================================
+const langMessages = {
+    lang_fr: "🇫🇷 **Français sélectionné !** Notre assistant va vous répondre en français.",
+    lang_en: "🇺🇸 **English selected!** Our assistant will reply in English.",
+    lang_de: "🇩🇪 **Deutsch ausgewählt!** Unser Assistent antwortet auf Deutsch.",
+    lang_ar: "🇸🇦 **تم اختيار العربية!** سيرد مساعدنا باللغة العربية.",
+    lang_ber: "🇲🇦 **Tamazight tettwaferned!** Anelmad-nneɣ ara k-yemleɣ s Tmazight."
+};
+
+client.on("interactionCreate", async (interaction) => {
+    if (!interaction.isButton()) return;
+    if (!interaction.customId.startsWith("lang_")) return;
+
+    const lang = interaction.customId;
+    const msg = langMessages[lang] || "Language selected!";
+
+    await interaction.update({ 
+        content: `<@${interaction.user.id}> — ${msg}`, 
+        components: [] 
+    });
 });
 
 // Close ticket — ask confirmation
@@ -648,70 +702,6 @@ client.on("interactionCreate", async (interaction) => {
 
     await interaction.reply({ content: "🗑️ Deleting ticket in 3 seconds...", ephemeral: true });
     setTimeout(() => interaction.channel.delete().catch(() => {}), 3000);
-});
-
-// ================================
-// 🤖 AI RESPONSE FUNCTION
-// ================================
-async function getAIResponse(ticketId, userMessage, username) {
-    if (!ticketHistory.has(ticketId)) ticketHistory.set(ticketId, []);
-    const history = ticketHistory.get(ticketId);
-    history.push({ role: "user", content: `${username}: ${userMessage}` });
-    if (history.length > 10) history.splice(0, history.length - 10);
-
-    const messages = [
-        {
-            role: "system",
-            content: `You are a professional support agent for LKWAN STORE, a digital products shop selling PSN cards, VP (Valorant Points), Netflix, Xbox, Steam, and more.
-- Detect the customer's language and ALWAYS respond in the same language
-- Be friendly, professional and helpful
-- Answer questions about products, prices, and orders
-- If you don't know exact details, say staff will confirm soon
-- Keep responses short and clear (max 3-4 lines)
-- Sign off as "LKWAN Support 🎮"`
-        },
-        ...history
-    ];
-
-    const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages,
-        max_tokens: 300,
-        temperature: 0.7
-    });
-
-    const reply = response.choices[0].message.content;
-    history.push({ role: "assistant", content: reply });
-    return reply;
-}
-
-// ================================
-// 💬 AI MESSAGE HANDLER FOR TICKETS
-// ================================
-client.on("messageCreate", async (message) => {
-    if (message.author.bot) return;
-    const channel = message.channel;
-    if (!channel.isThread()) return;
-    if (!channel.name.startsWith("ticket-")) return;
-    if (claimedTickets.has(channel.id)) return;
-
-    const isStaff = message.member?.roles.cache.has(process.env.STAFF_ROLE_ID);
-    if (isStaff) return;
-
-    await channel.sendTyping();
-
-    try {
-        const reply = await getAIResponse(channel.id, message.content, message.author.username);
-        await channel.send({
-            embeds: [new EmbedBuilder()
-                .setColor(0x0066FF)
-                .setDescription(reply)
-                .setFooter({ text: "LKWAN Support 🤖 • Staff will assist you soon" })
-            ]
-        });
-    } catch (err) {
-        console.error("AI Error:", err);
-    }
 });
 
 // ================================
