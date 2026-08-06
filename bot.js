@@ -14,7 +14,8 @@ const {
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
-    ChannelType
+    ChannelType,
+    OverwriteType
 } = require("discord.js");
 const express = require("express");
 const fs = require("fs");
@@ -572,10 +573,12 @@ client.on("interactionCreate", async (interaction) => {
         const permissionOverwrites = [
             {
                 id: guild.roles.everyone.id,
+                type: OverwriteType.Role,
                 deny: [PermissionsBitField.Flags.ViewChannel]
             },
             {
                 id: user.id,
+                type: OverwriteType.Member,
                 allow: [
                     PermissionsBitField.Flags.ViewChannel,
                     PermissionsBitField.Flags.SendMessages,
@@ -584,6 +587,7 @@ client.on("interactionCreate", async (interaction) => {
             },
             {
                 id: client.user.id,
+                type: OverwriteType.Member,
                 allow: [
                     PermissionsBitField.Flags.ViewChannel,
                     PermissionsBitField.Flags.SendMessages,
@@ -595,6 +599,7 @@ client.on("interactionCreate", async (interaction) => {
         if (process.env.STAFF_ROLE_ID) {
             permissionOverwrites.push({
                 id: process.env.STAFF_ROLE_ID,
+                type: OverwriteType.Role,
                 allow: [
                     PermissionsBitField.Flags.ViewChannel,
                     PermissionsBitField.Flags.SendMessages,
@@ -606,6 +611,7 @@ client.on("interactionCreate", async (interaction) => {
         if (process.env.SUPPORT_BOT_ID) {
             permissionOverwrites.push({
                 id: process.env.SUPPORT_BOT_ID,
+                type: OverwriteType.Member,
                 allow: [
                     PermissionsBitField.Flags.ViewChannel,
                     PermissionsBitField.Flags.SendMessages,
@@ -728,7 +734,7 @@ client.on("interactionCreate", async (interaction) => {
 
     const ownerId = getTicketOwner(channel.id);
     if (ownerId) {
-        await channel.permissionOverwrites.edit(ownerId, { SendMessages: false }).catch(() => {});
+        await channel.permissionOverwrites.edit(ownerId, { SendMessages: false }, { type: OverwriteType.Member }).catch(() => {});
     }
     if (!channel.name.startsWith("archive-")) {
         await channel.setName(`archive-${channel.name}`.slice(0, 100)).catch(() => {});
