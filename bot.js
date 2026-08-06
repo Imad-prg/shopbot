@@ -623,7 +623,7 @@ client.on("interactionCreate", async (interaction) => {
         const ticketChannel = await guild.channels.create({
             name: channelName,
             type: ChannelType.GuildText,
-            parent: process.env.TICKET_CATEGORY_ID || "1520392047507279984",
+            parent: "1520392047507279984",
             topic: `Ticket #${ticketNum} • Ouvert par ${user.tag} depuis #${originChannel.name}`,
             permissionOverwrites,
             reason: `Ticket created by ${user.username}`
