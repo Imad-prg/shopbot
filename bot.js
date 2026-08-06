@@ -682,7 +682,7 @@ client.on("interactionCreate", async (interaction) => {
     } catch (err) {
         console.error("Ticket error:", err);
         await interaction.editReply({
-            content: "❌ Error creating ticket. Please try again."
+            content: `❌ Error creating ticket: ${err.message || "please try again."}`
         });
     }
 });
