@@ -503,15 +503,51 @@ app.listen(PORT, () => console.log(`🌐 API running on port ${PORT}`));
 // ================================
 const TICKET_FILE = path.join(__dirname, "tickets.json");
 
+function loadTickets() {
+    if (!fs.existsSync(TICKET_FILE)) fs.writeFileSync(TICKET_FILE, JSON.stringify({ count: 0, owners: {} }, null, 2));
+    const data = JSON.parse(fs.readFileSync(TICKET_FILE, "utf8"));
+    if (!data.owners) data.owners = {};
+    return data;
+}
+
+function saveTickets(data) {
+    fs.writeFileSync(TICKET_FILE, JSON.stringify(data, null, 2));
+}
+
 function getTicketCount() {
-    if (!fs.existsSync(TICKET_FILE)) fs.writeFileSync(TICKET_FILE, JSON.stringify({ count: 0 }));
-    return JSON.parse(fs.readFileSync(TICKET_FILE, "utf8")).count;
+    return loadTickets().count;
 }
 
 function incrementTicketCount() {
-    const count = getTicketCount() + 1;
-    fs.writeFileSync(TICKET_FILE, JSON.stringify({ count }));
-    return count;
+    const data = loadTickets();
+    data.count += 1;
+    saveTickets(data);
+    return data.count;
+}
+
+function saveTicketOwner(channelId, ownerId) {
+    const data = loadTickets();
+    data.owners[channelId] = ownerId;
+    saveTickets(data);
+}
+
+function getTicketOwner(channelId) {
+    return loadTickets().owners[channelId];
+}
+
+function removeTicketOwner(channelId) {
+    const data = loadTickets();
+    delete data.owners[channelId];
+    saveTickets(data);
+}
+
+function slugify(str) {
+    return (str || "")
+        .toLowerCase()
+        .normalize("NFD").replace(new RegExp("[\\u0300-\\u036f]", "g"), "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 45);
 }
 
 // ================================
@@ -523,40 +559,71 @@ client.on("interactionCreate", async (interaction) => {
 
     const guild = interaction.guild;
     const user = interaction.user;
+    const originChannel = interaction.channel;
 
     await interaction.deferReply({ ephemeral: true });
 
     try {
         const ticketNum = String(incrementTicketCount()).padStart(4, '0');
 
-        // Send a new message in the channel, then create thread from it
-        const ticketMsg = await interaction.channel.send({
-            content: `🎫 **Ticket #${ticketNum}** — <@${user.id}>`
-        });
+        const channelName = `${slugify(user.username)}-${slugify(originChannel.name)}`.slice(0, 90)
+            || `ticket-${ticketNum}`;
 
-        const thread = await ticketMsg.startThread({
-            name: `ticket-${ticketNum} • ${user.username}`,
-            autoArchiveDuration: 10080,
-            type: ChannelType.PrivateThread,
+        const permissionOverwrites = [
+            {
+                id: guild.roles.everyone.id,
+                deny: [PermissionsBitField.Flags.ViewChannel]
+            },
+            {
+                id: user.id,
+                allow: [
+                    PermissionsBitField.Flags.ViewChannel,
+                    PermissionsBitField.Flags.SendMessages,
+                    PermissionsBitField.Flags.ReadMessageHistory
+                ]
+            },
+            {
+                id: client.user.id,
+                allow: [
+                    PermissionsBitField.Flags.ViewChannel,
+                    PermissionsBitField.Flags.SendMessages,
+                    PermissionsBitField.Flags.ManageChannels
+                ]
+            }
+        ];
+
+        if (process.env.STAFF_ROLE_ID) {
+            permissionOverwrites.push({
+                id: process.env.STAFF_ROLE_ID,
+                allow: [
+                    PermissionsBitField.Flags.ViewChannel,
+                    PermissionsBitField.Flags.SendMessages,
+                    PermissionsBitField.Flags.ReadMessageHistory
+                ]
+            });
+        }
+
+        if (process.env.SUPPORT_BOT_ID) {
+            permissionOverwrites.push({
+                id: process.env.SUPPORT_BOT_ID,
+                allow: [
+                    PermissionsBitField.Flags.ViewChannel,
+                    PermissionsBitField.Flags.SendMessages,
+                    PermissionsBitField.Flags.ReadMessageHistory
+                ]
+            });
+        }
+
+        const ticketChannel = await guild.channels.create({
+            name: channelName,
+            type: ChannelType.GuildText,
+            parent: process.env.TICKET_CATEGORY_ID || originChannel.parentId || undefined,
+            topic: `Ticket #${ticketNum} • Ouvert par ${user.tag} depuis #${originChannel.name}`,
+            permissionOverwrites,
             reason: `Ticket created by ${user.username}`
         });
 
-        // Delete the base message to keep channel clean
-        await ticketMsg.delete().catch(() => {});
-
-        // Add user and staff to thread
-        await thread.members.add(user.id).catch(() => {});
-        const staffMembers = guild.members.cache.filter(m =>
-            m.roles.cache.has(process.env.STAFF_ROLE_ID) && !m.user.bot
-        );
-        for (const [, member] of staffMembers) {
-            await thread.members.add(member.id).catch(() => {});
-        }
-
-        // Add LKWAN SUPPORT bot to thread
-        if (process.env.SUPPORT_BOT_ID) {
-            await thread.members.add(process.env.SUPPORT_BOT_ID).catch(() => {});
-        }
+        saveTicketOwner(ticketChannel.id, user.id);
 
         const closeRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
@@ -573,7 +640,7 @@ client.on("interactionCreate", async (interaction) => {
             .setFooter({ text: "LKWAN STORE 🎮" })
             .setTimestamp();
 
-        await thread.send({
+        await ticketChannel.send({
             content: `<@${user.id}> | <@&${process.env.STAFF_ROLE_ID}>`,
             embeds: [embed],
             components: [closeRow]
@@ -609,7 +676,7 @@ client.on("interactionCreate", async (interaction) => {
         );
 
         await interaction.editReply({
-            content: `✅ Your ticket has been created: <#${thread.id}>`
+            content: `✅ Your ticket has been created: <#${ticketChannel.id}>`
         });
 
     } catch (err) {
@@ -629,7 +696,7 @@ client.on("interactionCreate", async (interaction) => {
     const isAdmin = interaction.member.permissions.has(PermissionsBitField.Flags.Administrator);
     const channel = interaction.channel;
 
-    if (!isStaff && !isAdmin && channel.ownerId !== interaction.user.id) {
+    if (!isStaff && !isAdmin && getTicketOwner(channel.id) !== interaction.user.id) {
         return interaction.reply({ content: "❌ You don't have permission.", ephemeral: true });
     }
 
@@ -658,7 +725,14 @@ client.on("interactionCreate", async (interaction) => {
 
     const channel = interaction.channel;
     await interaction.reply({ content: "📁 Ticket archived.", ephemeral: true });
-    if (channel.isThread()) await channel.setArchived(true).catch(() => {});
+
+    const ownerId = getTicketOwner(channel.id);
+    if (ownerId) {
+        await channel.permissionOverwrites.edit(ownerId, { SendMessages: false }).catch(() => {});
+    }
+    if (!channel.name.startsWith("archive-")) {
+        await channel.setName(`archive-${channel.name}`.slice(0, 100)).catch(() => {});
+    }
 });
 
 // Delete ticket — admin only
@@ -672,7 +746,11 @@ client.on("interactionCreate", async (interaction) => {
     }
 
     await interaction.reply({ content: "🗑️ Deleting ticket in 3 seconds...", ephemeral: true });
-    setTimeout(() => interaction.channel.delete().catch(() => {}), 3000);
+    const channelId = interaction.channel.id;
+    setTimeout(() => {
+        interaction.channel.delete().catch(() => {});
+        removeTicketOwner(channelId);
+    }, 3000);
 });
 
 // ================================
