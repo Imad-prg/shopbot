@@ -620,10 +620,19 @@ client.on("interactionCreate", async (interaction) => {
             });
         }
 
+        let ticketParent = process.env.TICKET_CATEGORY_ID || "1520392047507279984";
+        try {
+            const category = await guild.channels.fetch(ticketParent);
+            if (!category || category.type !== ChannelType.GuildCategory) ticketParent = undefined;
+        } catch {
+            console.warn(`⚠️ Catégorie de ticket ${ticketParent} introuvable sur ce serveur, création sans catégorie.`);
+            ticketParent = undefined;
+        }
+
         const ticketChannel = await guild.channels.create({
             name: channelName,
             type: ChannelType.GuildText,
-            parent: "1520392047507279984",
+            parent: ticketParent,
             topic: `Ticket #${ticketNum} • Ouvert par ${user.tag} depuis #${originChannel.name}`,
             permissionOverwrites,
             reason: `Ticket created by ${user.username}`
