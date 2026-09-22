@@ -22,6 +22,8 @@ const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
 
+const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID || "1547654632497614933";
+
 // ================================
 // 📦 DATA STORE (JSON file)
 // ================================
@@ -596,9 +598,9 @@ client.on("interactionCreate", async (interaction) => {
             }
         ];
 
-        if (process.env.STAFF_ROLE_ID) {
+        if (STAFF_ROLE_ID) {
             permissionOverwrites.push({
-                id: process.env.STAFF_ROLE_ID,
+                id: STAFF_ROLE_ID,
                 type: OverwriteType.Role,
                 allow: [
                     PermissionsBitField.Flags.ViewChannel,
@@ -656,7 +658,7 @@ client.on("interactionCreate", async (interaction) => {
             .setTimestamp();
 
         await ticketChannel.send({
-            content: `<@${user.id}> | <@&${process.env.STAFF_ROLE_ID}>`,
+            content: `<@${user.id}> | <@&${STAFF_ROLE_ID}>`,
             embeds: [embed],
             components: [closeRow]
         });
@@ -707,7 +709,7 @@ client.on("interactionCreate", async (interaction) => {
     if (!interaction.isButton()) return;
     if (interaction.customId !== "close_ticket_store") return;
 
-    const isStaff = interaction.member.roles.cache.has(process.env.STAFF_ROLE_ID);
+    const isStaff = interaction.member.roles.cache.has(STAFF_ROLE_ID);
     const isAdmin = interaction.member.permissions.has(PermissionsBitField.Flags.Administrator);
     const channel = interaction.channel;
 
